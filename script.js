@@ -33,16 +33,22 @@ let gapiInited = false;
 let gsisInited = false;
 
 // --- SISTEMA DE ACESSO (AUTH) ---
+// Monitor de Acesso
 onAuthStateChanged(auth, (user) => {
     const loginScreen = document.getElementById('login-screen');
     const appShell = document.querySelector('.app-shell');
+    
+    console.log("Estado do usuário mudou. Usuário atual:", user); // Isso vai aparecer no F12
+
     if (user) {
-        if(loginScreen) loginScreen.style.display = 'none';
-        if(appShell) appShell.style.display = 'flex';
+        console.log("Usuário detectado! Mostrando o painel...");
+        if(loginScreen) loginScreen.style.setProperty('display', 'none', 'important');
+        if(appShell) appShell.style.setProperty('display', 'flex', 'important');
         iniciarSincronizacaoRealtime();
     } else {
-        if(loginScreen) loginScreen.style.display = 'flex';
-        if(appShell) appShell.style.display = 'none';
+        console.log("Nenhum usuário. Mostrando tela de login...");
+        if(loginScreen) loginScreen.style.setProperty('display', 'flex', 'important');
+        if(appShell) appShell.style.setProperty('display', 'none', 'important');
     }
 });
 
