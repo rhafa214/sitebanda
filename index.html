@@ -69,47 +69,65 @@
                         </div>
                     </div>
 
-                    <div class="bento-grid">
-                        <!-- PRÓXIMA MISSÃO -->
-                        <div class="bento-card col-span-2 highlight-card">
-                            <div class="card-head"><span class="card-label">PRÓXIMA MISSÃO</span><div class="mission-status-tag">Agendado</div></div>
-                            <h2 id="dash-next-desc" class="mission-title text-white">Carregando...</h2>
-                            <div class="mission-details-row">
-                                <div class="m-detail"><div class="m-icon"><i class="fas fa-map-pin"></i></div><span id="dash-next-info-local" class="text-white">-</span></div>
-                                <div class="m-detail"><div class="m-icon"><i class="fas fa-calendar"></i></div><span id="dash-next-info-date" class="text-white">-</span></div>
-                            </div>
-                        </div>
+                   <div class="bento-grid">
+    <!-- CARD PRÓXIMA MISSÃO -> LEVA PARA AGENDA -->
+    <div class="bento-card col-span-2 highlight-card dashboard-clickable" onclick="router('agenda')">
+        <div class="card-head">
+            <span class="card-label">PRÓXIMA MISSÃO</span>
+            <div class="mission-status-tag">Ver Detalhes <i class="fas fa-chevron-right ml-1 text-[8px]"></i></div>
+        </div>
+        <h2 id="dash-next-desc" class="mission-title">Carregando...</h2>
+        <div class="mission-details-row">
+            <div class="m-detail"><div class="m-icon"><i class="fas fa-map-pin"></i></div><span id="dash-next-info-local">-</span></div>
+            <div class="m-detail"><div class="m-icon"><i class="fas fa-calendar"></i></div><span id="dash-next-info-date">-</span></div>
+        </div>
+    </div>
 
-                        <!-- LITURGIA -->
-                        <div class="bento-card liturgy-card">
-                            <div class="card-head"><span class="card-label text-amber-600 font-bold">LITURGIA</span><i class="fas fa-cross text-amber-500"></i></div>
-                            <div class="liturgy-content py-4 text-center">
-                                <i class="fas fa-book-bible text-2xl text-amber-600 opacity-30 mb-2"></i>
-                                <p class="text-sm italic">"A Palavra é lâmpada para os meus pés."</p>
-                            </div>
-                            <a href="https://liturgia.cancaonova.com/pb/" target="_blank" class="btn-liturgia-link">Ler Liturgia</a>
-                        </div>
+    <!-- CARD LITURGIA -> CONTINUA LINK EXTERNO -->
+    <div class="bento-card liturgy-card dashboard-clickable" onclick="window.open('https://liturgia.cancaonova.com/pb/', '_blank')">
+        <div class="card-head">
+            <span class="card-label text-amber-600 font-bold">LITURGIA</span>
+            <i class="fas fa-external-link-alt text-amber-500 text-xs"></i>
+        </div>
+        <div class="liturgy-content py-4 text-center">
+            <i class="fas fa-book-bible text-2xl text-amber-600 opacity-30 mb-2"></i>
+            <p class="text-sm italic">"A Palavra é lâmpada para os meus pés."</p>
+        </div>
+        <div class="btn-liturgia-link text-center">Abrir Agora</div>
+    </div>
 
-                        <!-- GMAIL -->
-                        <div class="bento-card bg-white border-l-4 border-red-500">
-                            <div class="card-head"><span class="card-label">GMAIL</span><i class="fas fa-envelope text-red-500"></i></div>
-                            <div id="gmail-status-area" class="mt-2 text-center">
-                                <button onclick="handleGmailAuth()" class="btn-gmail-auth">Sincronizar E-mails</button>
-                            </div>
-                        </div>
+    <!-- CARD GMAIL -> ABRE O MODAL/SYNC -->
+    <div class="bento-card bg-white border-l-4 border-red-500 dashboard-clickable" onclick="handleGmailAuth()">
+        <div class="card-head">
+            <span class="card-label">GMAIL</span>
+            <i class="fas fa-sync text-red-500 text-xs"></i>
+        </div>
+        <div id="gmail-status-area" class="mt-2 text-center py-2">
+            <p class="text-[11px] text-slate-400">Toque para atualizar</p>
+            <i class="fas fa-envelope text-red-100 text-3xl mt-2"></i>
+        </div>
+    </div>
 
-                        <!-- REPERTÓRIO COUNT -->
-                        <div class="bento-card">
-                            <div class="card-head"><span class="card-label">REPERTÓRIO</span><i class="fas fa-music text-indigo-500"></i></div>
-                            <h2 id="dash-count-letras" class="text-4xl font-black mt-4 text-black">0</h2>
-                            <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tighter">Músicas registradas</p>
-                        </div>
+    <!-- CARD REPERTÓRIO -> LEVA PARA LETRAS -->
+    <div class="bento-card dashboard-clickable" onclick="router('letras')">
+        <div class="card-head">
+            <span class="card-label text-indigo-600">REPERTÓRIO</span>
+            <i class="fas fa-arrow-right text-indigo-300 text-xs"></i>
+        </div>
+        <h2 id="dash-count-letras" class="text-4xl font-black mt-4 text-black">0</h2>
+        <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold">Músicas registradas</p>
+    </div>
 
-                        <!-- SALDO GERAL -->
-                        <div class="bento-card">
-                            <div class="card-head"><span class="card-label text-emerald-600 font-bold">SALDO GERAL</span><i class="fas fa-vault text-emerald-500"></i></div>
-                            <h2 id="dash-saldo-total" class="balance-text text-2xl">R$ 0,00</h2>
-                        </div>
+    <!-- CARD SALDO GERAL -> LEVA PARA FINANCEIRO -->
+    <div class="bento-card dashboard-clickable border-l-4 border-emerald-500" onclick="router('caixa')">
+        <div class="card-head">
+            <span class="card-label text-emerald-600 font-bold text-[10px]">SALDO GERAL</span>
+            <i class="fas fa-wallet text-emerald-500 text-xs"></i>
+        </div>
+        <h2 id="dash-saldo-total" class="balance-text text-2xl">R$ 0,00</h2>
+        <p class="text-[9px] text-slate-400 mt-1">Gerenciar caixinhas</p>
+    </div>
+</div>
 
                         <!-- PLATAFORMAS -->
                         <div class="bento-card col-span-full">
@@ -117,7 +135,7 @@
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <a href="https://mail.google.com/" target="_blank" class="shortcut-btn"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
                                 <a href="https://dashboard.offstep.com/" target="_blank" class="shortcut-btn"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
-                                <a href="https://artists.spotify.com/" target="_blank" class="shortcut-btn"><i class="fab fa-spotify text-green-500"></i><span>Artists</span></a>
+                                <a href="https://artists.spotify.com/" target="_blank" class="shortcut-btn"><i class="fab fa-spotify text-green-500"></i><span>Spotify for Artists</span></a>
                                 <a href="https://www.instagram.com/" target="_blank" class="shortcut-btn"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
                             </div>
                         </div>
