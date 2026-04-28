@@ -11,198 +11,134 @@
 </head>
 <body class="bg-[#F8FAFC]">
 
-    <div class="app-shell">
-       <aside class="sidebar">
-    <!-- HEADER DO LOGO CENTRALIZADO -->
-    <div class="sidebar-header">
-        <div class="brand-container-vertical">
-            <div class="brand-logo-box mx-auto">
-                <img src="logo-leao.png" alt="MS" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
-                <i class="fas fa-flame text-[#D4AF37] text-xl hidden" id="fallback-icon"></i>
+    <!-- O APP SÓ APARECE APÓS LOGIN -->
+    <div class="app-shell" style="display: none;">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-container-vertical">
+                    <div class="brand-logo-box mx-auto">
+                        <img src="logo-leao.png" alt="MS" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
+                        <i class="fas fa-flame text-[#D4AF37] text-xl hidden" id="fallback-icon"></i>
+                    </div>
+                    <div class="brand-text-center mt-4">
+                        <span class="brand-name">Sedentos<span class="text-[#D4AF37]">.</span></span>
+                        <span class="brand-tagline">MISSÃO CATÓLICA</span>
+                    </div>
+                </div>
             </div>
-            <div class="brand-text-center mt-4">
-                <span class="brand-name">Sedentos<span class="text-[#D4AF37]">.</span></span>
-                <span class="brand-tagline">MISSÃO CATÓLICA</span>
+
+            <nav class="sidebar-nav">
+                <p class="nav-section-title">Principal</p>
+                <button onclick="router('dashboard')" class="nav-link active" id="nav-dashboard"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></button>
+                <button onclick="router('agenda')" class="nav-link" id="nav-agenda"><i class="fas fa-calendar-alt"></i> <span>Agenda</span></button>
+                <button onclick="router('letras')" class="nav-link" id="nav-letras"><i class="fas fa-guitar"></i> <span>Repertório</span></button>
+                
+                <p class="nav-section-title">Administração</p>
+                <button onclick="router('caixa')" class="nav-link" id="nav-caixa"><i class="fas fa-hand-holding-dollar"></i> <span>Financeiro</span></button>
+                <button onclick="router('docs')" class="nav-link" id="nav-docs"><i class="fas fa-file-invoice"></i> <span>Documentos</span></button>
+                <button onclick="router('senhas')" class="nav-link" id="nav-senhas"><i class="fas fa-key"></i> <span>Cofre</span></button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button onclick="handleLogout()" class="nav-link text-red-400"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
             </div>
-        </div>
-    </div>
+        </aside>
 
-    <!-- NAVEGAÇÃO COM ÍCONES COMPLETOS -->
-    <nav class="sidebar-nav">
-        <p class="nav-section-title">Menu Principal</p>
-        <button onclick="router('dashboard')" class="nav-link active" id="nav-dashboard">
-            <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
-        </button>
-        <button onclick="router('agenda')" class="nav-link" id="nav-agenda">
-            <i class="fas fa-calendar-alt"></i> <span>Agenda</span>
-        </button>
-        <button onclick="router('letras')" class="nav-link" id="nav-letras">
-            <i class="fas fa-guitar"></i> <span>Repertório</span>
-        </button>
-        
-        <p class="nav-section-title">Administração</p>
-        <button onclick="router('caixa')" class="nav-link" id="nav-caixa">
-            <i class="fas fa-hand-holding-dollar"></i> <span>Financeiro</span>
-        </button>
-        <button onclick="router('senhas')" class="nav-link" id="nav-senhas">
-            <i class="fas fa-key"></i> <span>Cofre</span>
-        </button>
-        <button onclick="router('docs')" class="nav-link" id="nav-docs">
-            <i class="fas fa-file-invoice"></i> <span>Documentos</span>
-        </button>
-    </nav>
-
-    <!-- RODAPÉ DO MENU -->
-    <div class="sidebar-footer">
-        <button onclick="handleLogout()" class="nav-link text-red-400 hover:text-red-300">
-            <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
-        </button>
-    </div>
-</aside>
-
-       <header class="main-header">
-    <div class="header-breadcrumb flex items-center">
-        <!-- BOTÃO PARA CELULAR -->
-        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-            <i class="fas fa-bars"></i>
-            <span id="breadcrumb" class="current-page">DASHBOARD</span>
-        </button>
-    </div>
+        <!-- CONTEÚDO -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-breadcrumb flex items-center">
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+                    <span id="breadcrumb" class="current-page text-gold">DASHBOARD</span>
+                </div>
+                <div class="header-actions">
+                    <div id="live-clock" class="digital-clock">00:00:00</div>
+                </div>
             </header>
 
             <div class="view-wrapper">
                 
-                <!-- VIEW: DASHBOARD (UNIFICADA) -->
+                <!-- VIEW: DASHBOARD -->
                 <section id="dashboard-view" class="view active">
                     <div class="welcome-banner">
-                        <div class="welcome-info">
-                            <h1 class="welcome-title">Salve Maria!</h1>
-                            <div class="spiritual-quote">
-                                <p id="saint-quote">"Nada te perturbe..."</p>
-                                <span id="autor-santo">— ...</span>
-                            </div>
+                        <h1 class="welcome-title text-black">Salve Maria!</h1>
+                        <div class="spiritual-quote">
+                            <p id="saint-quote">"Nada te perturbe..."</p>
+                            <span id="autor-santo">— Santa Teresa de Ávila</span>
                         </div>
                     </div>
 
                     <div class="bento-grid">
+                        <!-- PRÓXIMA MISSÃO -->
                         <div class="bento-card col-span-2 highlight-card">
-                            <div class="card-head">
-                                <span class="card-label">PRÓXIMA MISSÃO</span>
-                                <div class="mission-status-tag">Agendado</div>
-                            </div>
-                            <h2 id="dash-next-desc" class="mission-title">Carregando...</h2>
+                            <div class="card-head"><span class="card-label">PRÓXIMA MISSÃO</span><div class="mission-status-tag">Agendado</div></div>
+                            <h2 id="dash-next-desc" class="mission-title text-white">Carregando...</h2>
                             <div class="mission-details-row">
-                                <div class="m-detail"><div class="m-icon"><i class="fas fa-map-location-dot"></i></div><div class="m-info"><small>LOCAL</small><span id="dash-next-info-local">-</span></div></div>
-                                <div class="m-detail"><div class="m-icon"><i class="fas fa-calendar-check"></i></div><div class="m-info"><small>DATA</small><span id="dash-next-info-date">-</span></div></div>
+                                <div class="m-detail"><div class="m-icon"><i class="fas fa-map-pin"></i></div><span id="dash-next-info-local" class="text-white">-</span></div>
+                                <div class="m-detail"><div class="m-icon"><i class="fas fa-calendar"></i></div><span id="dash-next-info-date" class="text-white">-</span></div>
                             </div>
                         </div>
 
+                        <!-- LITURGIA -->
                         <div class="bento-card liturgy-card">
-                            <div class="card-head">
-                                <span class="card-label text-amber-600 font-bold">LITURGIA</span>
-                                <i class="fas fa-cross text-amber-500"></i>
-                            </div>
-                            <div class="liturgy-content py-4">
+                            <div class="card-head"><span class="card-label text-amber-600 font-bold">LITURGIA</span><i class="fas fa-cross text-amber-500"></i></div>
+                            <div class="liturgy-content py-4 text-center">
                                 <i class="fas fa-book-bible text-2xl text-amber-600 opacity-30 mb-2"></i>
                                 <p class="text-sm italic">"A Palavra é lâmpada para os meus pés."</p>
                             </div>
                             <a href="https://liturgia.cancaonova.com/pb/" target="_blank" class="btn-liturgia-link">Ler Liturgia</a>
                         </div>
 
+                        <!-- GMAIL -->
                         <div class="bento-card bg-white border-l-4 border-red-500">
                             <div class="card-head"><span class="card-label">GMAIL</span><i class="fas fa-envelope text-red-500"></i></div>
-                            <div id="gmail-status-area" class="mt-2">
-                                <p class="text-[11px] text-slate-400 mb-3">Sincronize as mensagens</p>
-                                <button onclick="handleGmailAuth()" class="btn-gmail-auth"><i class="fab fa-google mr-2 text-red-500"></i> Sincronizar</button>
+                            <div id="gmail-status-area" class="mt-2 text-center">
+                                <button onclick="handleGmailAuth()" class="btn-gmail-auth">Sincronizar E-mails</button>
                             </div>
                         </div>
 
+                        <!-- REPERTÓRIO COUNT -->
                         <div class="bento-card">
                             <div class="card-head"><span class="card-label">REPERTÓRIO</span><i class="fas fa-music text-indigo-500"></i></div>
-                            <h2 id="dash-count-letras" class="text-4xl font-black mt-4">0</h2>
+                            <h2 id="dash-count-letras" class="text-4xl font-black mt-4 text-black">0</h2>
                             <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tighter">Músicas registradas</p>
                         </div>
 
+                        <!-- SALDO GERAL -->
                         <div class="bento-card">
-                            <div class="card-head"><span class="card-label text-emerald-600">SALDO GERAL</span><i class="fas fa-vault text-emerald-500"></i></div>
+                            <div class="card-head"><span class="card-label text-emerald-600 font-bold">SALDO GERAL</span><i class="fas fa-vault text-emerald-500"></i></div>
                             <h2 id="dash-saldo-total" class="balance-text text-2xl">R$ 0,00</h2>
                         </div>
 
+                        <!-- PLATAFORMAS -->
                         <div class="bento-card col-span-full">
-                            <div class="card-head mb-4"><span class="card-label">PLATAFORMAS</span></div>
+                            <div class="card-head mb-4"><span class="card-label">PLATAFORMAS DIGITAIS</span></div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <a href="https://mail.google.com/" target="_blank" class="shortcut-btn"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
                                 <a href="https://dashboard.offstep.com/" target="_blank" class="shortcut-btn"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
                                 <a href="https://artists.spotify.com/" target="_blank" class="shortcut-btn"><i class="fab fa-spotify text-green-500"></i><span>Artists</span></a>
                                 <a href="https://www.instagram.com/" target="_blank" class="shortcut-btn"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
                             </div>
                         </div>
-                        <!-- CARD REDES SOCIAIS -->
-<div class="bento-card col-span-full">
-    <div class="card-head mb-6">
-        <span class="card-label">ALCANCE DA MISSÃO</span>
-        <div class="flex gap-2">
-            <button onclick="prepararEdicaoSocial()" class="text-[10px] bg-slate-100 px-3 py-1 rounded-full font-bold hover:bg-gold transition-all">ATUALIZAR NÚMEROS</button>
-        </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- INSTAGRAM -->
-        <div class="social-stat-item">
-            <div class="social-icon-box bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500">
-                <i class="fab fa-instagram text-white"></i>
-            </div>
-            <div class="social-info">
-                <h3 id="count-instagram">0</h3>
-                <p>Seguidores</p>
-            </div>
-        </div>
-        <!-- YOUTUBE -->
-        <div class="social-stat-item">
-            <div class="social-icon-box bg-red-600">
-                <i class="fab fa-youtube text-white"></i>
-            </div>
-            <div class="social-info">
-                <h3 id="count-youtube">0</h3>
-                <p>Inscritos</p>
-            </div>
-        </div>
-        <!-- SPOTIFY -->
-        <div class="social-stat-item">
-            <div class="social-icon-box bg-[#1DB954]">
-                <i class="fab fa-spotify text-white"></i>
-            </div>
-            <div class="social-info">
-                <h3 id="count-spotify">0</h3>
-                <p>Ouvintes Mensais</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- MODAL PARA ATUALIZAR REDES (ADICIONE NO FINAL DO HTML) -->
-<div id="social-modal" class="modal-overlay" onclick="this.style.display='none'">
-    <div class="modal-window max-w-sm" onclick="event.stopPropagation()">
-        <div class="p-8">
-            <h2 class="text-xl font-bold mb-6">Atualizar Alcance</h2>
-            <div class="space-y-4">
-                <div><label class="text-[10px] font-bold uppercase">Instagram</label><input type="number" id="input-ig" class="w-full border p-2 rounded"></div>
-                <div><label class="text-[10px] font-bold uppercase">YouTube</label><input type="number" id="input-yt" class="w-full border p-2 rounded"></div>
-                <div><label class="text-[10px] font-bold uppercase">Spotify</label><input type="number" id="input-sp" class="w-full border p-2 rounded"></div>
-                <button onclick="saveSocialStats()" class="btn-gold-full">Salvar Milestones</button>
-            </div>
-        </div>
-    </div>
-</div>
+                        <!-- SOCIAL STATS -->
+                        <div class="bento-card col-span-full">
+                            <div class="card-head mb-6"><span class="card-label">ALCANCE SOCIAL</span><button onclick="prepararEdicaoSocial()" class="text-[10px] bg-slate-100 px-3 py-1 rounded-full font-bold">ATUALIZAR</button></div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="social-stat-item"><div class="social-icon-box bg-pink-500"><i class="fab fa-instagram text-white"></i></div><div class="social-info"><h3 id="count-instagram">0</h3><p>Seguidores</p></div></div>
+                                <div class="social-stat-item"><div class="social-icon-box bg-red-600"><i class="fab fa-youtube text-white"></i></div><div class="social-info"><h3 id="count-youtube">0</h3><p>Inscritos</p></div></div>
+                                <div class="social-stat-item"><div class="social-icon-box bg-[#1DB954]"><i class="fab fa-spotify text-white"></i></div><div class="social-info"><h3 id="count-spotify">0</h3><p>Ouvintes</p></div></div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 <!-- VIEW: AGENDA -->
                 <section id="agenda-view" class="view hidden">
-                    <div class="view-header-flex">
-                        <h1 class="text-2xl font-bold">Agenda de Missões</h1>
-                        <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium"><i class="fab fa-whatsapp"></i> Compartilhar</button>
-                    </div>
+                    <div class="view-header-flex"><h1>Agenda</h1><button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium"><i class="fab fa-whatsapp"></i> Compartilhar</button></div>
                     <div class="glass-form mt-6">
-                        <div class="input-row"><input type="text" id="agenda-desc" placeholder="Descrição"><input type="text" id="agenda-local" placeholder="Local"><input type="date" id="agenda-data"></div>
+                        <div class="input-row"><input type="text" id="agenda-desc" placeholder="Evento"><input type="text" id="agenda-local" placeholder="Local"><input type="date" id="agenda-data"></div>
                         <button onclick="addAgenda()" class="btn-gold-full mt-4">Salvar Missão</button>
                     </div>
                     <div id="list-agenda" class="list-stack mt-8"></div>
@@ -210,107 +146,83 @@
 
                 <!-- VIEW: CAIXINHAS -->
                 <section id="caixa-view" class="view hidden">
-                    <div class="view-header-flex"><h1 class="text-2xl font-bold">Caixinhas</h1><button onclick="shareFinanceWhatsApp()" class="btn-whatsapp-premium"><i class="fab fa-whatsapp"></i> Compartilhar</button></div>
+                    <div class="view-header-flex"><h1>Caixinhas</h1><button onclick="shareFinanceWhatsApp()" class="btn-whatsapp-premium"><i class="fab fa-whatsapp"></i> Compartilhar</button></div>
                     <div class="caixinhas-grid mb-10 mt-6">
-                        <div class="caixinha-card"><div class="cx-icon bg-indigo-50 text-indigo-600"><i class="fas fa-van-shuttle"></i></div><div class="cx-info"><span class="cx-label">Viagens</span><h2 id="saldo-viagem">R$ 0,00</h2></div><div class="cx-progress"><div id="bar-viagem" style="width: 0%"></div></div></div>
-                        <div class="caixinha-card"><div class="cx-icon bg-purple-50 text-purple-600"><i class="fas fa-microphone"></i></div><div class="cx-info"><span class="cx-label">Gravações</span><h2 id="saldo-gravacao">R$ 0,00</h2></div><div class="cx-progress"><div id="bar-gravacao" style="width: 0%"></div></div></div>
-                        <div class="caixinha-card"><div class="cx-icon bg-amber-50 text-amber-600"><i class="fas fa-ticket"></i></div><div class="cx-info"><span class="cx-label">Rifa</span><h2 id="saldo-rifa">R$ 0,00</h2></div><div class="cx-progress"><div id="bar-rifa" style="width: 0%"></div></div></div>
+                        <div class="caixinha-card"><div class="cx-icon bg-indigo-50 text-indigo-600"><i class="fas fa-van-shuttle"></i></div><div class="cx-info"><span>Viagens</span><h2 id="saldo-viagem">R$ 0,00</h2></div><div class="cx-progress"><div id="bar-viagem"></div></div></div>
+                        <div class="caixinha-card"><div class="cx-icon bg-purple-50 text-purple-600"><i class="fas fa-microphone"></i></div><div class="cx-info"><span>Gravações</span><h2 id="saldo-gravacao">R$ 0,00</h2></div><div class="cx-progress"><div id="bar-gravacao"></div></div></div>
+                        <div class="caixinha-card"><div class="cx-icon bg-amber-50 text-amber-600"><i class="fas fa-ticket"></i></div><div class="cx-info"><span>Rifa</span><h2 id="saldo-rifa">R$ 0,00</h2></div><div class="cx-progress"><div id="bar-rifa"></div></div></div>
                     </div>
                     <div class="glass-form">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4"><input type="text" id="caixa-desc" placeholder="Descrição"><input type="number" id="caixa-valor" placeholder="Valor"><select id="caixa-destino"><option value="viagem">Viagem</option><option value="gravacao">Gravação</option><option value="rifa">Rifa</option></select><select id="caixa-tipo"><option value="in">Entrada (+)</option><option value="out">Saída (-)</option></select></div>
-                        <button onclick="addFinanceiro()" class="btn-gold-full mt-4">Lançar Transação</button>
+                        <button onclick="addFinanceiro()" class="btn-gold-full mt-4">Lançar</button>
                     </div>
                 </section>
 
                 <!-- VIEW: REPERTÓRIO -->
                 <section id="letras-view" class="view hidden">
-                    <div class="view-header-flex"><h1 class="text-2xl font-bold">Músicas    </h1></div>
+                    <h1>Hinário Pro</h1>
                     <div class="glass-form mt-6" id="form-letras-container">
-                        <h3 id="form-letras-title" class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">Nova Música</h3>
-                        <div class="flex gap-4 mb-4"><input type="text" id="letra-titulo" placeholder="Título"><input type="text" id="letra-tom" placeholder="Tom" class="w-24 text-center"></div>
-                        <div class="editor-toolbar mb-0">
-                            <button onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button>
-                            <button onclick="execEditorCommand('italic')"><i class="fas fa-italic"></i></button>
-                            <button onclick="execEditorCommand('justifyCenter')"><i class="fas fa-align-center"></i></button>
-                            <button onclick="execEditorCommand('foreColor', '#D4AF37')"><i class="fas fa-font text-gold"></i></button>
-                        </div>
+                        <div class="flex gap-4 mb-4"><input type="text" id="letra-titulo" placeholder="Título"><input type="text" id="letra-tom" placeholder="Tom" class="w-24 text-center font-bold"></div>
+                        <div class="editor-toolbar"><button onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button><button onclick="execEditorCommand('italic')"><i class="fas fa-italic"></i></button><button onclick="execEditorCommand('justifyCenter')"><i class="fas fa-align-center"></i></button><button onclick="execEditorCommand('foreColor', '#D4AF37')"><i class="fas fa-font"></i></button></div>
                         <div id="letra-editor" contenteditable="true" class="rich-editor-area"></div>
-                        <div class="flex gap-3 mt-4">
-                            <button id="btn-letra-save" onclick="addLetra()" class="btn-gold-full flex-1">Salvar na Nuvem</button>
-                            <button id="btn-letra-cancel" onclick="cancelarEdicaoLetra()" class="btn-action-gold bg-slate-100 hidden px-6 rounded-xl">Cancelar</button>
-                        </div>
+                        <div class="flex gap-3 mt-4"><button id="btn-letra-save" onclick="addLetra()" class="btn-gold-full flex-1">Salvar</button><button id="btn-letra-cancel" onclick="cancelarEdicaoLetra()" class="btn-action-gold bg-slate-100 hidden px-6 rounded-xl">Cancelar</button></div>
                     </div>
                     <div id="list-letras" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8"></div>
                 </section>
 
+                <!-- VIEW: DOCUMENTOS -->
+                <section id="docs-view" class="view hidden">
+                    <div class="view-header-flex mb-6"><h1>Arquivos da Missão</h1><button onclick="window.open('https://drive.google.com/drive/folders/1nH_4BjYXUUvCXsdB1Vq_TpnETnn-wTCn','_blank')" class="btn-action-gold px-4 text-xs">Abrir no Drive</button></div>
+                    <div class="drive-container"><iframe src="https://drive.google.com/embeddedfolderview?id=1nH_4BjYXUUvCXsdB1Vq_TpnETnn-wTCn#list" width="100%" height="600" frameborder="0"></iframe></div>
+                </section>
+
                 <!-- VIEW: COFRE -->
                 <section id="senhas-view" class="view hidden">
-                    <h1 class="text-2xl font-bold">Cofre de Senhas</h1>
+                    <h1>Cofre de Senhas</h1>
                     <div class="glass-form mt-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><input type="text" id="senha-site" placeholder="Site"><input type="text" id="senha-user" placeholder="Usuário"><input type="text" id="senha-pass" placeholder="Senha"></div>
                         <button onclick="addSenha()" class="btn-gold-full mt-4">Guardar</button>
                     </div>
                     <div id="list-senhas" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8"></div>
                 </section>
+            </div>
+        </main>
+    </div>
 
-               <!-- VIEW: DOCUMENTOS (INTEGRAÇÃO DRIVE) -->
-<!-- VIEW: DOCUMENTOS (INTEGRAÇÃO DRIVE) -->
-<section id="docs-view" class="view hidden">
-    <div class="view-header-flex mb-6">
-        <h1 class="text-2xl font-bold">Arquivos da Missão</h1>
-        <div class="flex gap-2">
-            <!-- Link completo para o botão abrir em nova aba -->
-            <button onclick="window.open('https://drive.google.com/drive/folders/1nH_4BjYXUUvCXsdB1Vq_TpnETnn-wTCn','_blank')" class="btn-action-gold px-4 text-xs">
-                <i class="fas fa-external-link-alt mr-2"></i>Abrir no Drive
-            </button>
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 bg-black z-[9999] flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[40px] max-w-sm w-full text-center shadow-2xl border-t-4 border-[#D4AF37]">
+            <div class="mx-auto mb-6 w-20 h-20 bg-black flex items-center justify-center rounded-3xl"><img src="logo-leao.png" class="w-12 h-12" onerror="this.style.display='none';"><i class="fas fa-lock text-gold text-3xl"></i></div>
+            <h2 class="text-2xl font-black text-black">MISSÃO SEDENTOS</h2>
+            <div class="space-y-4 mt-8"><input type="password" id="access-key" placeholder="Chave de Acesso" class="w-full p-5 bg-zinc-100 rounded-2xl text-center text-xl font-bold tracking-widest text-black outline-none"><button onclick="handleKeyLogin()" class="btn-gold-full py-4 shadow-lg">Entrar</button></div>
+            <p id="login-error" class="text-red-500 text-[10px] font-bold mt-4 hidden uppercase">Chave incorreta.</p>
         </div>
     </div>
-    
-    <!-- Container do Google Drive -->
-    <div class="drive-container glass">
-        <iframe 
-            src="https://drive.google.com/embeddedfolderview?id=1nH_4BjYXUUvCXsdB1Vq_TpnETnn-wTCn#list" 
-            id="drive-iframe"
-            width="100%" 
-            height="650" 
-            frameborder="0">
-        </iframe>
-    </div>
-</section>
 
-
-    <!-- MODAL -->
+    <!-- MODAL LETRAS -->
     <div id="lyric-modal" class="modal-overlay" onclick="closeModal()">
         <div class="modal-window" onclick="event.stopPropagation()">
-            <div class="modal-header-pro">
-                <div class="modal-title-box"><h2 id="modal-titulo"></h2><span id="modal-tom"></span></div>
-                <button onclick="closeModal()" class="btn-close-modal">×</button>
-            </div>
-            <div class="modal-lyrics-body"><div id="modal-corpo"></div></div>
+            <div class="modal-header-pro"><div class="modal-title-box"><h2 id="modal-titulo" class="text-black"></h2><span id="modal-tom"></span></div><button onclick="closeModal()" class="btn-close-modal">×</button></div>
+            <div class="modal-lyrics-body"><div id="modal-corpo" class="text-black"></div></div>
         </div>
     </div>
 
-<script async defer src="https://apis.google.com/js/api.js"></script>
+    <!-- MODAL SOCIAL -->
+    <div id="social-modal" class="modal-overlay" onclick="this.style.display='none'">
+        <div class="modal-window max-w-sm p-8" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-bold mb-6 text-black">Atualizar Alcance</h2>
+            <div class="space-y-4">
+                <div><label class="text-[10px] font-bold text-black">Instagram</label><input type="number" id="input-ig" class="text-black"></div>
+                <div><label class="text-[10px] font-bold text-black">YouTube</label><input type="number" id="input-yt" class="text-black"></div>
+                <div><label class="text-[10px] font-bold text-black">Spotify</label><input type="number" id="input-sp" class="text-black"></div>
+                <button onclick="saveSocialStats()" class="btn-gold-full">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BIBLIOTECAS GOOGLE -->
+    <script async defer src="https://apis.google.com/js/api.js"></script>
     <script async defer src="https://accounts.google.com/gsi/client"></script>
     <script type="module" src="script.js"></script>
 </body>
-<!-- TELA DE CHAVE DE ACESSO -->
-<div id="login-screen" class="fixed inset-0 bg-black z-[9999] flex items-center justify-center p-6">
-    <div class="bg-white p-10 rounded-[40px] max-w-sm w-full text-center shadow-2xl border-t-4 border-[#D4AF37]">
-        <div class="mx-auto mb-6 w-20 h-20 bg-black flex items-center justify-center rounded-3xl shadow-xl">
-            <img src="logo-leao.png" class="w-12 h-12 object-contain" onerror="this.style.display='none';">
-            <i class="fas fa-lock text-[#D4AF37] text-3xl"></i>
-        </div>
-        <h2 class="text-2xl font-black mb-1 text-zinc-900 tracking-tighter uppercase">Missão Sedentos</h2>
-        <p class="text-zinc-400 text-xs mb-8 uppercase tracking-widest font-bold">Digite a Chave de Acesso</p>
-        
-        <div class="space-y-4">
-            <input type="password" id="access-key" placeholder="••••••••" 
-                   class="w-full p-5 bg-zinc-100 rounded-2xl border-none outline-none text-center text-xl font-bold tracking-widest text-black focus:ring-2 ring-gold">
-            
-            <button onclick="handleKeyLogin()" class="btn-gold-full py-4 shadow-lg">Abrir Painel</button>
-        </div>
-        <p id="login-error" class="text-red-500 text-[10px] font-bold mt-4 hidden uppercase">Chave incorreta ou expirada.</p>
-    </div>
-</div>
 </html>
