@@ -23,6 +23,7 @@ let editandoLetraId = null;
 let tokenClient;
 let gapiInited = false;
 let gsisInited = false;
+let listaDeFrasesNuvem = [];
 
 // --- LOGIN ---
 onAuthStateChanged(auth, (user) => {
@@ -114,6 +115,10 @@ function iniciarSincronizacao() {
             document.getElementById('count-youtube').innerText = Number(d.yt || 0).toLocaleString();
             document.getElementById('count-spotify').innerText = Number(d.sp || 0).toLocaleString();
         }
+    });
+        onSnapshot(collection(db, "frases"), (snapshot) => {
+        listaDeFrasesNuvem = snapshot.docs.map(doc => doc.data());
+        sortearFraseFirebase(); // Sorteia uma assim que carregar
     });
 }
 
@@ -268,10 +273,39 @@ setInterval(() => {
     if(c) c.innerText = new Date().toLocaleTimeString('pt-BR');
 }, 1000);
 
-const frasesSantos = [{texto:"Cantar é rezar duas vezes.", autor:"Santo Agostinho"}, {texto:"Onde não há amor, coloque amor.", autor:"São João da Cruz"}, {texto:"Nada te perturbe.", autor:"Santa Teresa"}];
-const fs = frasesSantos[Math.floor(Math.random() * frasesSantos.length)];
-document.getElementById('saint-quote').innerText = `"${fs.texto}"`;
-document.getElementById('autor-santo').innerText = `— ${fs.autor}`;
+// Função para sortear e exibir a frase
+window.sortearFraseFirebase = () => {
+    const qEl = document.getElementById('saint-quote');
+    const aEl = document.getElementById('autor-santo');
+
+    if (listaDeFrasesNuvem.length > 0) {
+        const sorteada = listaDeFrasesNuvem[Math.floor(Math.random() * listaDeFrasesNuvem.length)];
+        if(qEl) qEl.innerText = `"${sorteada.texto}"`;
+        if(aEl) aEl.innerText = `— ${sorteada.autor}`;
+    } else {
+        // Frase padrão caso o banco esteja vazio
+        if(qEl) qEl.innerText = "Por Jesus nós somos?! SEDENTOS!";
+        if(aEl) aEl.innerText = "— Missão Sedentos";
+    }
+};
+
+// Ajuste na função router para sortear uma nova frase toda vez que clicar em Dashboard
+const originalRouter = window.router;
+window.router = (id) => {
+    if (id === 'dashboard') {
+        sortearFraseFirebase(); // Muda a frase ao voltar para a home
+    }
+    // Chama o restante da lógica de navegação que já tínhamos
+    document.querySelectorAll('.view').forEach(v => { v.classList.add('hidden'); v.classList.remove('active'); });
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    const target = document.getElementById(id + '-view');
+    if(target) { target.classList.remove('hidden'); target.classList.add('active'); }
+    const navBtn = document.getElementById('nav-' + id);
+    if(navBtn) navBtn.classList.add('active');
+    const breadEl = document.getElementById('breadcrumb');
+    if(breadEl) breadEl.innerText = id.toUpperCase();
+    if (window.innerWidth <= 768) document.querySelector('.sidebar').classList.remove('active');
+};
 
 window.shareAgendaWhatsApp = () => {
     let t = "*🎸 AGENDA - MISSÃO SEDENTOS*\n\n";
