@@ -1,0 +1,582 @@
+:root {
+    --gold: #D4AF37;
+    --gold-light: #F1D592;
+    --sidebar-bg: #000000;
+    --main-bg: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --zinc-900: #0F172A;
+    --zinc-400: #94A3B8;
+    --sidebar-w: 300px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+body { background-color: var(--main-bg); color: var(--zinc-900); height: 100vh; overflow: hidden; }
+
+/* SHELL & SIDEBAR */
+.app-shell { display: flex; height: 100vh; width: 100%; }
+
+/* --- SIDEBAR REESTRUTURADA --- */
+.sidebar { 
+    width: var(--sidebar-w); 
+    background: #000000; 
+    color: white; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 40px 20px; 
+    flex-shrink: 0; 
+    border-right: 1px solid rgba(212, 175, 55, 0.15);
+    height: 100vh;
+}
+
+/* Centralização do Logo */
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.brand-container-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.brand-logo-box { 
+    width: 64px; 
+    height: 64px; 
+    border-radius: 18px; 
+    background: #111; 
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.1);
+}
+
+.brand-name { 
+    display: block; 
+    font-size: 1.6rem; 
+    font-weight: 800; 
+    letter-spacing: -1px; 
+    color: #fff;
+}
+
+.brand-tagline { 
+    display: block; 
+    font-size: 0.65rem; 
+    font-weight: 700; 
+    color: var(--gold); 
+    letter-spacing: 3px; 
+    margin-top: 2px;
+}
+
+/* Títulos de Seção */
+.nav-section-title { 
+    font-size: 0.65rem; 
+    text-transform: uppercase; 
+    color: #444; 
+    margin: 30px 0 12px 12px; 
+    font-weight: 800; 
+    letter-spacing: 2px; 
+}
+
+/* Links do Menu */
+.nav-link { 
+    width: 100%; 
+    border: none; 
+    background: none; 
+    color: #71717a; 
+    padding: 14px 18px; 
+    text-align: left; 
+    cursor: pointer; 
+    border-radius: 16px; 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    margin-bottom: 5px; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    font-size: 0.9rem; 
+    font-weight: 600; 
+}
+
+.nav-link i { 
+    font-size: 1.1rem; 
+    width: 20px; 
+    text-align: center;
+}
+
+/* Estado Ativo (Dourado com Glow) */
+.nav-link.active { 
+    background: var(--gold); 
+    color: #000; 
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3); 
+}
+
+.nav-link.active i { 
+    color: #000; 
+}
+
+/* Efeito Hover */
+.nav-link:hover:not(.active) { 
+    background: rgba(255, 255, 255, 0.05); 
+    color: #fff; 
+    transform: translateX(5px);
+}
+
+.nav-link:hover i {
+    color: var(--gold);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 20px;
+}
+
+/* MAIN AREA */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main-header { height: 80px; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--zinc-200); background: white; }
+.current-page { font-weight: 800; letter-spacing: 2px; font-size: 0.75rem; color: var(--zinc-400); }
+.digital-clock { font-weight: 800; color: var(--zinc-900); font-size: 1.1rem; }
+
+.view-wrapper { flex: 1; padding: 48px; overflow-y: auto; }
+.view { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.view.active { display: block; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* WELCOME & BENTO */
+.welcome-banner { margin-bottom: 48px; }
+.welcome-title { font-size: 2.5rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; }
+.spiritual-quote { border-left: 4px solid var(--gold); padding-left: 20px; }
+.spiritual-quote p { font-style: italic; font-size: 1.2rem; color: #475569; margin-bottom: 4px; font-weight: 500; }
+.spiritual-quote span { font-size: 0.75rem; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+
+.bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.bento-card { background: white; padding: 32px; border-radius: 32px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 10px 15px -3px rgba(0,0,0,0.03); }
+.col-span-2 { grid-column: span 2; }
+
+.highlight-card { background: var(--sidebar-bg); color: white; position: relative; overflow: hidden; border: 1px solid var(--gold); }
+.highlight-card .mission-title { font-size: 2rem; font-weight: 800; margin: 16px 0; color: white; }
+.card-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; }
+.card-head { display: flex; justify-content: space-between; align-items: center; }
+
+.balance-text { font-size: 3rem; font-weight: 900; letter-spacing: -2px; color: #22C55E; margin-top: 12px; }
+
+/* CAIXINHAS NUBANK STYLE */
+.caixinhas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.caixinha-card { background: white; padding: 28px; border-radius: 28px; border: 1px solid var(--zinc-200); transition: 0.3s; cursor: default; }
+.caixinha-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-color: var(--gold); }
+.cx-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; items-center: center; justify-content: center; font-size: 1.2rem; margin-bottom: 20px; }
+.cx-label { font-size: 0.75rem; font-weight: 700; color: var(--zinc-400); text-transform: uppercase; }
+.cx-info h2 { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
+.cx-progress { height: 6px; background: #F1F5F9; border-radius: 10px; margin-top: 20px; overflow: hidden; }
+.cx-progress div { height: 100%; background: var(--gold); border-radius: 10px; transition: 1s ease-in-out; }
+
+/* GLASS FORM & INPUTS */
+.glass-form { background: white; border: 1px solid var(--zinc-200); border-radius: 32px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+.input-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--zinc-400); margin-bottom: 8px; margin-left: 4px; }
+.input-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+input, select, textarea { 
+    width: 100%; border: 1px solid var(--zinc-200); padding: 14px 18px; border-radius: 16px; 
+    background: #F8FAFC; outline: none; font-size: 0.95rem; font-weight: 500; transition: 0.3s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--gold); background: white; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1); }
+
+/* BUTTONS */
+.btn-gold-full { 
+    width: 100%; background: var(--gold); color: black; font-weight: 800; 
+    padding: 18px; border-radius: 18px; border: none; cursor: pointer; transition: 0.3s;
+    text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;
+}
+.btn-gold-full:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(212, 175, 55, 0.3); filter: brightness(1.05); }
+
+.btn-whatsapp-premium { 
+    background: #25D366; color: white; padding: 12px 24px; border-radius: 14px; 
+    font-weight: 700; display: flex; align-items: center; gap: 10px; border: none; cursor: pointer; transition: 0.3s;
+}
+.btn-whatsapp-premium:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); }
+
+/* LISTS & ITEMS */
+.list-stack { display: flex; flex-direction: column; gap: 16px; }
+.mission-item { 
+    background: white; padding: 24px 32px; border-radius: 24px; 
+    border: 1px solid var(--zinc-200); display: flex; justify-content: space-between; align-items: center;
+}
+.mission-concluded { opacity: 0.4; filter: grayscale(1); background: #F1F5F9; border-style: dashed; }
+.badge-concluded { background: var(--zinc-900); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; margin-left: 10px; }
+
+/* MODAL PRO */
+.modal-overlay { 
+    display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); 
+}
+.modal-window { 
+    background: white; margin: 40px auto; width: 80%; max-width: 900px; 
+    border-radius: 40px; padding: 0; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
+    animation: modalSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalSlide { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-header-pro { background: var(--zinc-900); padding: 40px; display: flex; justify-content: space-between; align-items: center; color: white; }
+.modal-title-box h2 { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+.modal-title-box span { color: var(--gold); font-weight: 800; font-size: 0.9rem; }
+.btn-close-modal { background: rgba(255,255,255,0.1); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; cursor: pointer; transition: 0.3s; }
+.btn-close-modal:hover { background: var(--gold); color: black; }
+
+.modal-lyrics-body { padding: 60px; max-height: 60vh; overflow-y: auto; }
+.modal-lyrics-body pre { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; line-height: 2; color: #334155; white-space: pre-wrap; font-weight: 500; }
+
+.letra-mini-card { 
+    background: white; padding: 24px; border-radius: 20px; border: 1px solid var(--zinc-200); 
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s;
+}
+.letra-mini-card:hover { border-color: var(--gold); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+.tom-badge { background: var(--zinc-900); color: var(--gold); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
+/* --- ESTILIZAÇÃO DOS ÍCONES NA MISSÃO --- */
+.mission-details-row {
+    display: flex;
+    gap: 30px;
+    margin-top: 10px;
+}
+
+.m-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.m-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 1rem;
+}
+
+.m-info small {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #888;
+    letter-spacing: 1px;
+}
+
+.m-info span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ddd;
+}
+
+.mission-status-tag {
+    background: #D4AF37;
+    color: black;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* --- CARD DE LITURGIA --- */
+.liturgy-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(to bottom right, #ffffff, #fffbeb);
+    border: 1px solid #fef3c7;
+}
+
+.liturgy-content {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.bible-icon {
+    font-size: 2rem;
+    color: #d97706;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+.liturgy-content p {
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #451a03;
+    font-weight: 500;
+}
+
+.btn-liturgia-link {
+    background: #f59e0b;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-liturgia-link:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+}
+/* ATALHOS DASHBOARD */
+.shortcut-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    transition: 0.3s;
+    text-decoration: none;
+}
+.shortcut-btn:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+    background: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+.shortcut-btn i { font-size: 1.5rem; }
+.shortcut-btn span { font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+
+/* EDITOR DE TEXTO PRO */
+.editor-toolbar {
+    display: flex;
+    gap: 5px;
+    background: #1a1a1a;
+    padding: 8px;
+    border-radius: 12px 12px 0 0;
+}
+.editor-toolbar button {
+    width: 35px;
+    height: 35px;
+    color: #ccc;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+.editor-toolbar button:hover { background: var(--gold); color: black; }
+
+.rich-editor-area {
+    min-height: 200px;
+    padding: 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    outline: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+}
+.rich-editor-area:empty:before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+}
+
+/* ESTILO MÚSICA FIXADA */
+.card-pinned {
+    border: 2px solid var(--gold) !important;
+    background: #fffdf5 !important;
+    box-shadow: 0 15px 30px rgba(212, 175, 55, 0.1) !important;
+}
+.pin-btn {
+    color: #cbd5e1;
+    transition: 0.3s;
+}
+.pin-btn.active { color: var(--gold); }
+/* Seções do Repertório */
+.col-span-full {
+    grid-column: 1 / -1;
+}
+
+/* Estilo para músicas fixadas (mais "brilho") */
+.card-pinned {
+    border: 1px solid var(--gold) !important;
+    background: linear-gradient(135deg, #fffdf5 0%, #ffffff 100%) !important;
+    box-shadow: 0 10px 20px rgba(212, 175, 55, 0.1) !important;
+    transform: scale(1.02);
+}
+
+/* Botão Gmail no Dash */
+.btn-gmail-auth {
+    width: 100%;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.btn-gmail-auth:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+}
+
+/* Melhoria no Modal para Letras Longas */
+.modal-lyrics-body div {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #1e293b;
+}
+
+/* Destaque para cifras dentro do editor (se usar a cor ouro) */
+.modal-lyrics-body font[color="#D4AF37"] {
+    font-weight: 800;
+    background: rgba(212, 175, 55, 0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+.social-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    transition: 0.3s;
+}
+
+.social-stat-item:hover {
+    transform: scale(1.03);
+    background: white;
+    border-color: var(--gold);
+}
+
+.social-icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.social-info h3 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+.social-info p {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+/* --- AJUSTES PARA CELULAR (RESPONSIVIDADE) --- */
+@media (max-width: 768px) {
+    .app-shell {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -100%; /* Esconde o menu */
+        top: 0;
+        z-index: 10000;
+        transition: 0.3s;
+        height: 100vh;
+        width: 80%; /* Menu ocupa quase tudo no celular */
+    }
+
+    .sidebar.active {
+        left: 0; /* Mostra o menu */
+    }
+
+    .main-content {
+        width: 100%;
+    }
+
+    .main-header {
+        padding: 0 20px;
+    }
+
+    /* Grid do Dashboard em 1 coluna no celular */
+    .bento-grid, .caixinhas-grid, .grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .col-span-2, .col-span-full {
+        grid-column: span 1 !important;
+    }
+
+    .view-wrapper {
+        padding: 20px;
+    }
+
+    /* Modal de letra ocupa a tela toda no celular */
+    .modal-window {
+        width: 95%;
+        margin: 10px auto;
+        max-height: 95vh;
+    }
+
+    .modal-lyrics-body {
+        padding: 30px 20px;
+    }
+
+    /* Esconde o relógio no celular para sobrar espaço */
+    .digital-clock {
+        display: none;
+    }
+
+    /* Botão de menu hambúrguer (precisamos adicionar no HTML) */
+    .mobile-menu-btn {
+        display: block !important;
+        background: black;
+        color: var(--gold);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--gold);
+        margin-right: 15px;
+    }
+}
+
+/* Esconde o botão no PC */
+.mobile-menu-btn {
+    display: none;
+}
+/* --- CONTAINER DO GOOGLE DRIVE --- */
+.drive-container {
+    padding: 10px;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+#drive-iframe {
+    border-radius: 16px;
+    background: transparent;
+}
+
+/* Ajuste para telas menores (Celular) */
+@media (max-width: 768px) {
+    #drive-iframe {
+        height: 500px; /* Um pouco menor no celular */
+    }
+    
+    .drive-container {
+        padding: 5px;
+    }
+}
