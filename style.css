@@ -706,3 +706,41 @@ input:focus, select:focus, textarea:focus { border-color: var(--gold); backgroun
     outline: none;
     color: #000;
 }
+/* --- CARDS CLICÁVEIS --- */
+.dashboard-clickable {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    user-select: none;
+}
+
+/* Efeito de "Levantar" ao passar o mouse */
+.dashboard-clickable:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: var(--gold);
+}
+
+/* Efeito de "Pressionar" ao clicar */
+.dashboard-clickable:active {
+    transform: translateY(-2px) scale(0.98);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Feedback visual interno no hover */
+.dashboard-clickable:hover .card-label {
+    letter-spacing: 2px;
+    transition: 0.3s;
+}
+
+.dashboard-clickable:hover .m-icon {
+    background: var(--gold);
+    color: black;
+    transition: 0.3s;
+}
+
+/* Estilo específico para o card de Missão (Dark) no hover */
+.highlight-card.dashboard-clickable:hover {
+    border-color: white;
+    box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
+}
