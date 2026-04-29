@@ -155,8 +155,23 @@ function iniciarSincronizacao() {
 // ==========================================
 // 5. GMAIL API INTEGRATION
 // ==========================================
-window.gapiLoaded = () => gapi.load('client', async () => await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"] }));
-window.gisLoaded = () => { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID_GOOGLE, scope: GMAIL_SCOPES, callback: '' }); };
+function initGapi() {
+    if (window.gapi && window.gapi.load) {
+        gapi.load('client', async () => await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"] }));
+    } else {
+        setTimeout(initGapi, 100);
+    }
+}
+initGapi();
+
+function initGis() {
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+        tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID_GOOGLE, scope: GMAIL_SCOPES, callback: '' });
+    } else {
+        setTimeout(initGis, 100);
+    }
+}
+initGis();
 
 window.toggleGmailExpand = () => {
     const card = document.getElementById('gmail-card');
