@@ -2,6 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// ==========================================
+// 1. CONFIGURAÇÕES E ESTADO GLOBAL
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyCyEZRT-PIwpLpvOAqffVKXp1fVaJfBMTs",
     authDomain: "sedentos.firebaseapp.com",
@@ -23,7 +26,9 @@ let editandoLetraId = null;
 let tokenClient;
 let listaDeFrasesNuvem = [];
 
-// --- SISTEMA DE LOGIN ---
+// ==========================================
+// 2. SISTEMA DE LOGIN E AUTENTICAÇÃO
+// ==========================================
 onAuthStateChanged(auth, (user) => {
     const loginScreen = document.getElementById('login-screen');
     const shell = document.getElementById('app-shell');
@@ -44,9 +49,13 @@ window.handleKeyLogin = () => {
         .catch(() => document.getElementById('login-error').classList.remove('hidden'));
 };
 
-window.handleLogout = () => { if(confirm("Deseja sair?")) signOut(auth); };
+window.handleLogout = () => { 
+    if(confirm("Deseja sair?")) signOut(auth); 
+};
 
-// --- NAVEGAÇÃO ---
+// ==========================================
+// 3. NAVEGAÇÃO E UI GERAL
+// ==========================================
 window.router = (id) => {
     document.querySelectorAll('.view').forEach(v => {
         v.classList.add('hidden');
@@ -77,7 +86,9 @@ window.router = (id) => {
 window.toggleMobileMenu = () => document.querySelector('.sidebar').classList.toggle('active');
 window.execEditorCommand = (cmd, val = null) => document.execCommand(cmd, false, val);
 
-// --- SINCRONIZAÇÃO EM TEMPO REAL ---
+// ==========================================
+// 4. SINCRONIZAÇÃO DE DADOS (FIRESTORE)
+// ==========================================
 function iniciarSincronizacao() {
     onSnapshot(query(collection(db, "agenda"), orderBy("data", "asc")), (snap) => renderAgenda(snap.docs.map(d => ({id: d.id, ...d.data()}))));
     onSnapshot(collection(db, "caixa"), (snap) => renderCaixa(snap.docs.map(d => ({id: d.id, ...d.data()}))));
@@ -89,16 +100,44 @@ function iniciarSincronizacao() {
         sortearFraseFirebase();
     });
 
+    fetchLiturgia();
+
     onSnapshot(doc(db, "config", "gmail_cache"), (snapshot) => {
         if (snapshot.exists()) {
-            const emails = snapshot.data().mensagens || [];
-            let html = '<div class="space-y-2 mt-2 text-left">';
-            emails.forEach(m => html += `<div class="border-b pb-1"><p class="text-[9px] font-black text-gold uppercase">${m.de}</p><p class="text-[11px] font-bold text-slate-700 truncate">${m.assunto}</p></div>`);
-            document.getElementById('gmail-status-area').innerHTML = html + '</div>';
+            const data = snapshot.data();
+            const emails = data.mensagens || [];
+            const area = document.getElementById('gmail-status-area');
+            
+            if (!area) return;
+
+            if (emails.length > 0) {
+                const isExpanded = document.getElementById('gmail-card')?.classList.contains('col-span-full');
+                const maxH = isExpanded ? 'max-h-[400px] overflow-y-auto' : 'max-h-[140px] overflow-hidden';
+
+                let html = `<div id="gmail-list-container" class="mt-2 text-left transition-all duration-500 ease-in-out pr-2 ${maxH}">`;
+                html += `<div class="space-y-2">`;
+                emails.forEach(m => {
+                    const unreadName = m.unread ? "font-black text-slate-900" : "font-bold text-slate-500";
+                    const unreadTitle = m.unread ? "font-bold text-red-600" : "font-medium text-slate-500";
+                    const unreadDot = m.unread ? `<span class="bg-red-500 w-2 h-2 rounded-full inline-block mr-2 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>` : `<span class="w-2 h-2 rounded-full inline-block mr-2 bg-transparent"></span>`;
+                    const bgHov = m.unread ? "bg-white shadow-sm border border-red-50" : "bg-slate-50/50 border border-transparent";
+                    
+                    html += `
+                        <div class="p-3 rounded-2xl flex flex-col justify-center transition-colors ${bgHov}">
+                            <div class="flex items-center">
+                                ${unreadDot}
+                                <span class="text-[10px] ${unreadName} uppercase tracking-wider truncate">${m.de}</span>
+                            </div>
+                            <p class="text-[12px] ${unreadTitle} truncate ml-4 mt-1">${m.assunto}</p>
+                        </div>`;
+                });
+                html += `</div></div>`;
+                html += `<div class="text-[9px] text-slate-400 uppercase font-bold mt-3 border-t border-slate-100 pt-3 text-center">Última sinc: ${new Date(data.ultimaSinc).toLocaleTimeString('pt-BR')} (Toque para expandir)</div>`;
+                area.innerHTML = html;
+            }
         }
     });
 
-    // CORREÇÃO AQUI: 'snapshot' no lugar de 'snap' para evitar o erro de Reference
     onSnapshot(doc(db, "config", "social"), (snapshot) => {
         if (snapshot.exists()) {
             const d = snapshot.data();
@@ -113,15 +152,32 @@ function iniciarSincronizacao() {
     });
 }
 
-// --- GMAIL AUTH ---
+// ==========================================
+// 5. GMAIL API INTEGRATION
+// ==========================================
 window.gapiLoaded = () => gapi.load('client', async () => await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"] }));
 window.gisLoaded = () => { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID_GOOGLE, scope: GMAIL_SCOPES, callback: '' }); };
 
-window.handleGmailAuth = () => {
+window.toggleGmailExpand = () => {
+    const card = document.getElementById('gmail-card');
+    if (card) {
+        card.classList.toggle('col-span-full');
+        const listContainer = document.getElementById('gmail-list-container');
+        if (listContainer) {
+            listContainer.classList.toggle('max-h-[140px]');
+            listContainer.classList.toggle('max-h-[400px]');
+            listContainer.classList.toggle('overflow-hidden');
+            listContainer.classList.toggle('overflow-y-auto');
+        }
+    }
+};
+
+window.handleGmailAuth = (e) => {
+    if(e) e.stopPropagation();
     if (!tokenClient) return alert("Google carregando...");
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) throw (resp);
-        document.getElementById('gmail-status-area').innerHTML = "<p class='text-[10px] animate-pulse'>Sincronizando...</p>";
+        document.getElementById('gmail-status-area').innerHTML = "<div class='py-8 text-center'><i class='fas fa-spinner fa-spin text-red-500 text-2xl mb-4 inline-block'></i><p class='text-[10px] uppercase font-bold tracking-widest animate-pulse'>Sincronizando MENSAGENS...</p></div>";
         await syncGmailToFirebase();
     };
     tokenClient.requestAccessToken({prompt: 'consent'});
@@ -129,20 +185,52 @@ window.handleGmailAuth = () => {
 
 async function syncGmailToFirebase() {
     try {
-        const response = await gapi.client.gmail.users.messages.list({ 'userId': 'me', 'maxResults': 3 });
+        const response = await gapi.client.gmail.users.messages.list({ 'userId': 'me', 'maxResults': 8 });
         const messages = response.result.messages || [];
         let lista = [];
         for (const msg of messages) {
             const detail = await gapi.client.gmail.users.messages.get({ 'userId': 'me', 'id': msg.id });
-            const subject = detail.result.payload.headers.find(h => h.name === 'Subject').value;
-            const from = detail.result.payload.headers.find(h => h.name === 'From').value;
-            lista.push({ de: from.split('<')[0].trim(), assunto: subject });
+            const subjectHeader = detail.result.payload.headers.find(h => h.name === 'Subject');
+            const subject = subjectHeader ? subjectHeader.value : '(Sem Assunto)';
+            const fromHeader = detail.result.payload.headers.find(h => h.name === 'From');
+            const from = fromHeader ? fromHeader.value.split('<')[0].trim() : 'Desconhecido';
+            const isUnread = detail.result.labelIds ? detail.result.labelIds.includes('UNREAD') : false;
+            lista.push({ de: from, assunto: subject, unread: isUnread });
         }
         await setDoc(doc(db, "config", "gmail_cache"), { mensagens: lista, ultimaSinc: new Date().toISOString() });
     } catch (err) { console.error(err); }
 }
 
-// --- OPERAÇÕES CRUD ---
+// ==========================================
+// 5B. LITURGIA DIÁRIA API
+// ==========================================
+async function fetchLiturgia() {
+    try {
+        const resp = await fetch('https://liturgia.up.railway.app/');
+        const data = await resp.json();
+        
+        const titleEl = document.getElementById('liturgia-titulo');
+        const previaEl = document.getElementById('liturgia-previa');
+        
+        if (titleEl && data.evangelho && data.evangelho.referencia) {
+            titleEl.innerText = `Evangelho (${data.evangelho.referencia})`;
+        }
+        if (previaEl && data.evangelho && data.evangelho.texto) {
+            let limit = data.evangelho.texto.substring(0, 110);
+            previaEl.innerText = `"${limit}..."`;
+        }
+    } catch (e) {
+        console.error("Erro ao buscar liturgia", e);
+        const titleEl = document.getElementById('liturgia-titulo');
+        const previaEl = document.getElementById('liturgia-previa');
+        if (titleEl) titleEl.innerText = "Liturgia de Hoje";
+        if (previaEl) previaEl.innerText = "Mergulhe na palavra do dia e assista à homilia.";
+    }
+}
+
+// ==========================================
+// 6. OPERAÇÕES CRUD GERAIS
+// ==========================================
 window.addAgenda = async () => {
     const desc = document.getElementById('agenda-desc').value;
     const local = document.getElementById('agenda-local').value;
@@ -150,7 +238,6 @@ window.addAgenda = async () => {
     if(desc && data) await addDoc(collection(db, "agenda"), { desc, local, data });
 };
 
-// --- ADICIONAR FINANCEIRO (FORÇANDO NÚMERO) ---
 window.addFinanceiro = async () => {
     const desc = document.getElementById('caixa-desc').value;
     const valorInput = document.getElementById('caixa-valor').value;
@@ -162,7 +249,7 @@ window.addFinanceiro = async () => {
     try {
         await addDoc(collection(db, "caixa"), {
             desc: desc,
-            valor: Number(valorInput), // Garante que salva como NÚMERO
+            valor: Number(valorInput), 
             destino: destino,
             tipo: tipo,
             data: new Date().toISOString()
@@ -176,6 +263,7 @@ window.addFinanceiro = async () => {
         alert("Erro ao salvar: " + e.message);
     }
 };
+
 window.addLetra = async () => {
     const t = document.getElementById('letra-titulo').value;
     const tom = document.getElementById('letra-tom').value;
@@ -188,7 +276,8 @@ window.addLetra = async () => {
     } else {
         await addDoc(collection(db, "letras"), { titulo: t, tom, corpo: c, pinned: false });
     }
-    document.getElementById('letra-titulo').value = ""; document.getElementById('letra-editor').innerHTML = "";
+    document.getElementById('letra-titulo').value = ""; 
+    document.getElementById('letra-editor').innerHTML = "";
 };
 
 window.saveSocialStats = async () => {
@@ -220,7 +309,8 @@ window.prepararEdicaoLetra = (id, titulo, tom, corpo, e) => {
 
 window.cancelarEdicaoLetra = () => {
     editandoLetraId = null;
-    document.getElementById('letra-titulo').value = ""; document.getElementById('letra-tom').value = "";
+    document.getElementById('letra-titulo').value = ""; 
+    document.getElementById('letra-tom').value = "";
     document.getElementById('letra-editor').innerHTML = "";
     document.getElementById('btn-letra-cancel').classList.add('hidden');
 };
@@ -228,11 +318,15 @@ window.cancelarEdicaoLetra = () => {
 window.prepararEdicaoSocial = () => document.getElementById('social-modal').style.display = 'block';
 
 window.addSenha = async () => {
-    const s = document.getElementById('senha-site').value, u = document.getElementById('senha-user').value, p = document.getElementById('senha-pass').value;
+    const s = document.getElementById('senha-site').value;
+    const u = document.getElementById('senha-user').value;
+    const p = document.getElementById('senha-pass').value;
     if(s && p) await addDoc(collection(db, "senhas"), { s, u, p });
 };
 
-// --- RENDERIZADORES ---
+// ==========================================
+// 7. RENDERIZADORES
+// ==========================================
 function renderAgenda(agenda) {
     const list = document.getElementById('list-agenda');
     if(!list) return;
@@ -262,37 +356,29 @@ function renderAgenda(agenda) {
     }
 }
 
-// --- RENDERIZAR CAIXA (COM DEPURAÇÃO) ---
 function renderCaixa(transacoes) {
-    console.log("📊 Dados recebidos do Firestore (Caixa):", transacoes); // Veja isso no F12
-
+    console.log("📊 Dados recebidos do Firestore (Caixa):", transacoes);
     let saldos = { viagem: 0, gravacao: 0, rifa: 0 };
     const listExtrato = document.getElementById('list-caixa');
     
     if(!listExtrato) return;
 
-    // Se não houver nada, limpa a tela e avisa
     if(transacoes.length === 0) {
         listExtrato.innerHTML = `<p class="p-10 text-center text-slate-400 italic text-sm">Nenhuma movimentação encontrada na nuvem.</p>`;
         document.getElementById('dash-saldo-total').innerText = "R$ 0,00";
         return;
     }
 
-    // Ordena por data
     const sortedTrans = transacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
 
     listExtrato.innerHTML = sortedTrans.map(t => {
         const isIn = t.tipo === 'in';
-        // Compatibilidade: se o destino estiver vazio (dados antigos), vai para viagem
         const destinoFinal = t.destino || 'viagem'; 
-        // Força o valor a ser número para evitar o erro de "undefined" ou "string"
         const valorNumerico = Number(t.valor) || 0;
         
-        // Soma o saldo
         if (saldos.hasOwnProperty(destinoFinal)) {
             saldos[destinoFinal] += isIn ? valorNumerico : -valorNumerico;
         } else {
-            // Se o destino for algo antigo/diferente, soma na viagem por padrão
             saldos.viagem += isIn ? valorNumerico : -valorNumerico;
         }
 
@@ -318,17 +404,14 @@ function renderCaixa(transacoes) {
         </div>`;
     }).join('');
 
-    // Atualiza os Cards de Caixinha (IDs precisam estar no HTML)
     if(document.getElementById('saldo-viagem')) document.getElementById('saldo-viagem').innerText = `R$ ${saldos.viagem.toFixed(2)}`;
     if(document.getElementById('saldo-gravacao')) document.getElementById('saldo-gravacao').innerText = `R$ ${saldos.gravacao.toFixed(2)}`;
     if(document.getElementById('saldo-rifa')) document.getElementById('saldo-rifa').innerText = `R$ ${saldos.rifa.toFixed(2)}`;
     
-    // Atualiza as Barras de Progresso
     if(document.getElementById('bar-viagem')) document.getElementById('bar-viagem').style.width = Math.min((saldos.viagem / 1000) * 100, 100) + "%";
     if(document.getElementById('bar-gravacao')) document.getElementById('bar-gravacao').style.width = Math.min((saldos.gravacao / 5000) * 100, 100) + "%";
     if(document.getElementById('bar-rifa')) document.getElementById('bar-rifa').style.width = Math.min((saldos.rifa / 2000) * 100, 100) + "%";
 
-    // Saldo Total do Dashboard
     const totalGeral = saldos.viagem + saldos.gravacao + saldos.rifa;
     const dashSaldo = document.getElementById('dash-saldo-total');
     if (dashSaldo) dashSaldo.innerText = `R$ ${totalGeral.toFixed(2)}`;
@@ -338,11 +421,9 @@ function renderLetras(letras) {
     const list = document.getElementById('list-letras');
     if (!list) return;
 
-    // Atualiza contador no Dashboard
     const countEl = document.getElementById('dash-count-letras');
     if (countEl) countEl.innerText = letras.length;
 
-    // Separa as músicas
     const fixadas = letras.filter(l => l.pinned);
     const outras = letras.filter(l => !l.pinned).sort((a, b) => a.titulo.localeCompare(b.titulo));
 
@@ -386,12 +467,14 @@ function renderSenhas(senhas) {
     if(list) list.innerHTML = senhas.map(s => `<div class="glass flex justify-between p-4 mb-2 shadow-sm border bg-white rounded-xl"><div><p class="font-bold text-gold uppercase text-[10px]">${s.s}</p><p class="text-xs text-slate-500 font-bold">${s.u} | ${s.p}</p></div><button onclick="deleteItem('senhas', '${s.id}', event)" class="text-red-300">×</button></div>`).join('');
 }
 
+// ==========================================
+// 8. UTILITÁRIOS E MODAIS GERAIS
+// ==========================================
 window.openModal = (titulo, tom, corpo) => {
     document.getElementById('modal-titulo').innerText = titulo;
     document.getElementById('modal-tom').innerText = "Tom: " + tom;
     document.getElementById('modal-corpo').innerHTML = corpo;
     
-    // LINHA NOVA: Reseta o scroll para o topo toda vez que abrir uma música
     const modalBody = document.querySelector('.modal-lyrics-body');
     if(modalBody) modalBody.scrollTop = 0;
 

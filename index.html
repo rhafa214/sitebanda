@@ -52,224 +52,240 @@
             </header>
 
             <div class="view-wrapper">
-          <!-- VIEW: DASHBOARD -->
-<section id="dashboard-view" class="view active">
-    <div class="welcome-banner mb-8">
-        <h1 class="text-black text-3xl font-extrabold">Salve Maria!</h1>
-        <div class="border-l-4 border-gold pl-4 mt-2">
-            <p id="saint-quote" class="italic text-slate-600">"Carregando..."</p>
-            <span id="autor-santo" class="text-xs font-bold text-gold uppercase"></span>
-        </div>
-    </div>
-
-    <div class="bento-grid">
-        <!-- TODOS OS CARDS AGORA TEM 'dashboard-clickable' -->
-        <div class="bento-card col-span-2 highlight-card dashboard-clickable text-left" onclick="router('agenda')">
-            <div class="card-head flex justify-between">
-                <span class="card-label">PRÓXIMA MISSÃO</span>
-                <div class="mission-status-tag">Detalhes <i class="fas fa-chevron-right ml-1"></i></div>
-            </div>
-            <h2 id="dash-next-desc" class="text-white text-2xl font-bold my-4 uppercase">Buscando...</h2>
-            <div class="flex gap-6">
-                <div class="flex items-center gap-2"><i class="fas fa-map-pin text-gold"></i><span id="dash-next-info-local" class="text-white">-</span></div>
-                <div class="flex items-center gap-2"><i class="fas fa-calendar text-gold"></i><span id="dash-next-info-date" class="text-white">-</span></div>
-            </div>
-        </div>
-
-        <div class="bento-card liturgy-card dashboard-clickable text-center" onclick="window.open('https://liturgia.cancaonova.com/pb/', '_blank')">
-            <span class="card-label text-amber-600">LITURGIA</span>
-            <div class="py-4"><i class="fas fa-cross text-amber-500 text-2xl mb-1"></i><p class="text-[11px] italic text-black">A Palavra de Hoje</p></div>
-            <div class="bg-amber-500 text-white rounded-lg p-2 text-[10px] font-bold">ABRIR</div>
-        </div>
-
-        <div class="bento-card bg-white border-l-4 border-red-500 text-center dashboard-clickable" onclick="handleGmailAuth()">
-            <span class="card-label">GMAIL</span>
-            <div id="gmail-status-area" class="mt-4">
-                <i class="fas fa-envelope text-red-100 text-3xl mb-2"></i>
-                <p class="text-[10px] text-slate-400">Sincronizar mensagens</p>
-            </div>
-        </div>
-
-        <div class="bento-card text-center dashboard-clickable" onclick="router('letras')">
-            <span class="card-label">REPERTÓRIO</span>
-            <h2 id="dash-count-letras" class="text-4xl font-black mt-2 text-black">0</h2>
-            <p class="text-[10px] text-slate-400">Músicas</p>
-        </div>
-
-        <div class="bento-card text-center dashboard-clickable border-l-4 border-emerald-500" onclick="router('caixa')">
-            <span class="card-label text-emerald-600">SALDO GERAL</span>
-            <h2 id="dash-saldo-total" class="text-2xl font-black text-emerald-600 mt-2">R$ 0,00</h2>
-        </div>
-
-        <div class="bento-card col-span-full">
-            <p class="card-label mb-4">PLATAFORMAS DIGITAIS</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <a href="https://mail.google.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
-                <a href="https://dashboard.offstep.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
-                <a href="https://artists.spotify.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fab fa-spotify text-green-500"></i><span>Spotify</span></a>
-                <a href="https://www.instagram.com/missaosedentos_/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
-            </div>
-        </div>
-
-        <div class="bento-card col-span-full dashboard-clickable">
-            <div class="flex justify-between mb-6"><span class="card-label">ALCANCE SOCIAL</span><button onclick="prepararEdicaoSocial()" class="bg-zinc-100 px-4 py-1 rounded-full text-[10px] font-bold hover:bg-gold">ATUALIZAR</button></div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="social-stat-item"><div class="social-icon-box bg-pink-500"><i class="fab fa-instagram text-white"></i></div><div class="social-info text-left"><h3 id="count-instagram">0</h3><p>Seguidores</p></div></div>
-                <div class="social-stat-item"><div class="social-icon-box bg-red-600"><i class="fab fa-youtube text-white"></i></div><div class="social-info text-left"><h3 id="count-youtube">0</h3><p>Inscritos</p></div></div>
-                <div class="social-stat-item"><div class="social-icon-box bg-[#1DB954]"><i class="fab fa-spotify text-white"></i></div><div class="social-info text-left"><h3 id="count-spotify">0</h3><p>Ouvintes</p></div></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-                <!-- VIEW: AGENDA (ESTILO CORRIGIDO COM WHATSAPP) -->
-<section id="agenda-view" class="view hidden">
-    <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-        <h1 class="text-2xl font-black text-black">Agenda Missão</h1>
-        <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium">
-            <i class="fab fa-whatsapp mr-2"></i> Compartilhar
-        </button>
-    </div>
-    <div class="glass-form p-8 mb-10">
-        <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">Agendar Novo Compromisso</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" id="agenda-desc" placeholder="O que vai ser?">
-            <input type="text" id="agenda-local" placeholder="Cidade/Local">
-            <input type="date" id="agenda-data">
-        </div>
-        <button onclick="addAgenda()" class="btn-gold-full mt-6">Confirmar Data</button>
-    </div>
-    <div id="list-agenda" class="mt-8"></div>
-</section>
-
-<!-- VIEW: REPERTÓRIO -->
-<section id="letras-view" class="view hidden">
-    <!-- Cabeçalho Simples -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-black text-black tracking-tight">Músicas</h1>
-        <p class="text-slate-400 text-sm">Gerencie o repertório e tons da missão</p>
-    </div>
-
-    <!-- Formulário de Cadastro (Recolhível no Mobile para poupar espaço) -->
-    <div class="glass-form mb-10" id="form-letras-container">
-        <div class="flex gap-4 mb-4">
-            <input type="text" id="letra-titulo" placeholder="Título da Música" class="flex-1 font-bold">
-            <input type="text" id="letra-tom" placeholder="Tom" class="w-24 text-center text-gold font-bold">
-        </div>
-        
-        <div class="editor-toolbar flex gap-1 mb-0 border-b-0 rounded-t-2xl">
-            <button onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button>
-            <button onclick="execEditorCommand('justifyCenter')"><i class="fas fa-align-center"></i></button>
-            <button onclick="execEditorCommand('foreColor', '#D4AF37')"><i class="fas fa-font text-gold"></i></button>
-        </div>
-        <div id="letra-editor" contenteditable="true" class="rich-editor-area bg-slate-50 min-h-[200px] p-6 text-black outline-none border border-slate-200 rounded-b-2xl"></div>
-        
-        <div class="flex gap-3 mt-6">
-            <button onclick="addLetra()" class="btn-gold-full flex-1">Salvar Música</button>
-            <button onclick="cancelarEdicaoLetra()" id="btn-letra-cancel" class="hidden bg-slate-100 px-8 rounded-2xl text-slate-500 font-bold">Cancelar</button>
-        </div>
-    </div>
-
-    <!-- Container do Repertório (O JS vai dividir em seções aqui) -->
-    <div id="list-letras" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-</section>
-
-              <!-- VIEW: CAIXA (FINANCEIRO PRO) -->
-<section id="caixa-view" class="view hidden">
-    <div class="view-header-flex mb-8">
-        <div>
-            <h1 class="text-3xl font-black text-black">Financeiro</h1>
-            <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Gestão de Fundos e Caixinhas</p>
-        </div>
-        <button onclick="shareFinanceWhatsApp()" class="btn-whatsapp-premium">
-            <i class="fab fa-whatsapp"></i> Compartilhar Saldos
-        </button>
-    </div>
-
-    <!-- GRID DE CAIXINHAS (ESTILO NUBANK PRO) -->
-    <div class="caixinhas-grid mb-10">
-        <!-- CAIXINHA VIAGEM -->
-        <div class="caixinha-card bg-gradient-to-br from-indigo-600 to-indigo-800 text-white border-none shadow-lg shadow-indigo-200">
-            <div class="flex justify-between items-start mb-6">
-                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-van-shuttle"></i></div>
-                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Viagens</span>
-            </div>
-            <p class="text-xs opacity-80 mb-1">Saldo Disponível</p>
-            <h2 id="saldo-viagem" class="text-2xl font-black">R$ 0,00</h2>
-            <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-viagem" class="bg-white"></div></div>
-        </div>
-
-        <!-- CAIXINHA GRAVAÇÃO -->
-        <div class="caixinha-card bg-gradient-to-br from-purple-600 to-purple-800 text-white border-none shadow-lg shadow-purple-200">
-            <div class="flex justify-between items-start mb-6">
-                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-microphone-lines"></i></div>
-                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Gravação</span>
-            </div>
-            <p class="text-xs opacity-80 mb-1">Fundo de Produção</p>
-            <h2 id="saldo-gravacao" class="text-2xl font-black">R$ 0,00</h2>
-            <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-gravacao" class="bg-white"></div></div>
-        </div>
-
-        <!-- CAIXINHA RIFA -->
-        <div class="caixinha-card bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-none shadow-lg shadow-emerald-200">
-            <div class="flex justify-between items-start mb-6">
-                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-ticket-alt"></i></div>
-                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Rifas</span>
-            </div>
-            <p class="text-xs opacity-80 mb-1">Arrecadação Rifa</p>
-            <h2 id="saldo-rifa" class="text-2xl font-black">R$ 0,00</h2>
-            <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-rifa" class="bg-white"></div></div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- FORMULÁRIO DE LANÇAMENTO -->
-        <div class="glass-form h-fit">
-            <h3 class="text-lg font-black mb-6 flex items-center gap-2"><i class="fas fa-plus-circle text-gold"></i> Novo Lançamento</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Descrição</label>
-                    <input type="text" id="caixa-desc" placeholder="Ex: Oferta Missa, Venda Rifa...">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Valor (R$)</label>
-                    <input type="number" id="caixa-valor" placeholder="0,00">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Destino</label>
-                        <select id="caixa-destino">
-                            <option value="viagem">Caixa Viagem</option>
-                            <option value="gravacao">Caixa Gravação</option>
-                            <option value="rifa">Caixa Rifa</option>
-                        </select>
+                <!-- VIEW: DASHBOARD -->
+                <section id="dashboard-view" class="view active">
+                    <div class="welcome-banner mb-8">
+                        <h1 class="text-black text-3xl font-extrabold">Salve Maria!</h1>
+                        <div class="border-l-4 border-gold pl-4 mt-2">
+                            <p id="saint-quote" class="italic text-slate-600">"Carregando..."</p>
+                            <span id="autor-santo" class="text-xs font-bold text-gold uppercase"></span>
+                        </div>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tipo</label>
-                        <select id="caixa-tipo">
-                            <option value="in" class="text-emerald-500">Entrada (+)</option>
-                            <option value="out" class="text-red-500">Saída (-)</option>
-                        </select>
-                    </div>
-                </div>
-                <button onclick="addFinanceiro()" class="btn-gold-full py-4 mt-2">Confirmar Lançamento</button>
-            </div>
-        </div>
 
-        <!-- EXTRATO / HISTÓRICO -->
-        <div class="lg:col-span-2">
-            <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                    <h3 class="font-black text-slate-700 uppercase text-xs tracking-widest">Extrato de Movimentações</h3>
-                    <i class="fas fa-list-ul text-slate-300"></i>
-                </div>
-                <div id="list-caixa" class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
-                    <!-- JS vai preencher aqui -->
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+                    <div class="bento-grid">
+                        <div class="bento-card col-span-2 highlight-card dashboard-clickable text-left" onclick="router('agenda')">
+                            <div class="card-head flex justify-between">
+                                <span class="card-label">PRÓXIMA MISSÃO</span>
+                                <div class="mission-status-tag">Detalhes <i class="fas fa-chevron-right ml-1"></i></div>
+                            </div>
+                            <h2 id="dash-next-desc" class="text-white text-2xl font-bold my-4 uppercase">Buscando...</h2>
+                            <div class="flex gap-6">
+                                <div class="flex items-center gap-2"><i class="fas fa-map-pin text-gold"></i><span id="dash-next-info-local" class="text-white">-</span></div>
+                                <div class="flex items-center gap-2"><i class="fas fa-calendar text-gold"></i><span id="dash-next-info-date" class="text-white">-</span></div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card liturgy-card text-center relative flex flex-col justify-between">
+                            <span class="card-label text-amber-600 mb-2 block">LITURGIA</span>
+                            <div class="flex-1 flex flex-col items-center justify-center py-2 relative z-10 w-full">
+                                <i class="fas fa-cross text-amber-100 text-6xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -z-10"></i>
+                                <h3 id="liturgia-titulo" class="text-[11px] font-black text-slate-800 uppercase mb-2">Buscando Evangelho...</h3>
+                                <p id="liturgia-previa" class="text-[10px] italic text-slate-600 line-clamp-3 leading-relaxed mb-4 px-2">...</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-auto w-full">
+                                <button onclick="window.open('https://liturgia.cancaonova.com/pb/', '_blank')" class="bg-amber-500 text-white rounded-lg py-2 px-1 text-[9px] font-bold hover:bg-amber-600 transition-colors uppercase dashboard-clickable tracking-tighter">Canção Nova</button>
+                                <button onclick="window.open('https://padrepauloricardo.org/liturgia', '_blank')" class="bg-[#1e1b4b] text-white rounded-lg py-2 px-1 text-[9px] font-bold hover:bg-[#312e81] transition-colors uppercase dashboard-clickable tracking-tighter">P. Paulo Ricardo</button>
+                            </div>
+                        </div>
+
+                        <div id="gmail-card" class="bento-card bg-white border-l-4 border-red-500 text-center transition-all duration-300 ease-in-out cursor-pointer hover:shadow-xl hover:-translate-y-1" onclick="toggleGmailExpand()">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="card-label">GMAIL MISSÃO</span>
+                                <button onclick="handleGmailAuth(event)" class="text-[9px] font-bold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded-full transition-colors uppercase tracking-wider"><i class="fas fa-sync-alt mr-1"></i> Sincronizar</button>
+                            </div>
+                            <div id="gmail-status-area" class="mt-2 flex flex-col">
+                                <i class="fas fa-envelope text-red-100 text-3xl mb-2 mt-4 inline-block"></i>
+                                <p class="text-[10px] text-slate-400 mb-4">Clique em "Sincronizar" para conectar ao Gmail.</p>
+                            </div>
+                        </div>
+
+                        <div class="bento-card text-center dashboard-clickable" onclick="router('letras')">
+                            <span class="card-label">REPERTÓRIO</span>
+                            <h2 id="dash-count-letras" class="text-4xl font-black mt-2 text-black">0</h2>
+                            <p class="text-[10px] text-slate-400">Músicas</p>
+                        </div>
+
+                        <div class="bento-card text-center dashboard-clickable border-l-4 border-emerald-500" onclick="router('caixa')">
+                            <span class="card-label text-emerald-600">SALDO GERAL</span>
+                            <h2 id="dash-saldo-total" class="text-2xl font-black text-emerald-600 mt-2">R$ 0,00</h2>
+                        </div>
+
+                        <div class="bento-card col-span-full">
+                            <p class="card-label mb-4">PLATAFORMAS DIGITAIS</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <a href="https://mail.google.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
+                                <a href="https://dashboard.offstep.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
+                                <a href="https://artists.spotify.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fab fa-spotify text-green-500"></i><span>Spotify</span></a>
+                                <a href="https://www.instagram.com/missaosedentos/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
+                            </div>
+                        </div>
+
+                        <div class="bento-card col-span-full dashboard-clickable">
+                            <div class="flex justify-between mb-6"><span class="card-label">ALCANCE SOCIAL</span><button onclick="prepararEdicaoSocial()" class="bg-zinc-100 px-4 py-1 rounded-full text-[10px] font-bold hover:bg-gold">ATUALIZAR</button></div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="social-stat-item"><div class="social-icon-box bg-pink-500"><i class="fab fa-instagram text-white"></i></div><div class="social-info text-left"><h3 id="count-instagram">0</h3><p>Seguidores</p></div></div>
+                                <div class="social-stat-item"><div class="social-icon-box bg-red-600"><i class="fab fa-youtube text-white"></i></div><div class="social-info text-left"><h3 id="count-youtube">0</h3><p>Inscritos</p></div></div>
+                                <div class="social-stat-item"><div class="social-icon-box bg-[#1DB954]"><i class="fab fa-spotify text-white"></i></div><div class="social-info text-left"><h3 id="count-spotify">0</h3><p>Ouvintes</p></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: AGENDA -->
+                <section id="agenda-view" class="view hidden">
+                    <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                        <h1 class="text-2xl font-black text-black">Agenda Missão</h1>
+                        <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium">
+                            <i class="fab fa-whatsapp mr-2"></i> Compartilhar
+                        </button>
+                    </div>
+                    <div class="glass-form p-8 mb-10">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">Agendar Novo Compromisso</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="agenda-desc" placeholder="O que vai ser?">
+                            <input type="text" id="agenda-local" placeholder="Cidade/Local">
+                            <input type="date" id="agenda-data">
+                        </div>
+                        <button onclick="addAgenda()" class="btn-gold-full mt-6">Confirmar Data</button>
+                    </div>
+                    <div id="list-agenda" class="mt-8"></div>
+                </section>
+
+                <!-- VIEW: REPERTÓRIO -->
+                <section id="letras-view" class="view hidden">
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-black text-black tracking-tight">Músicas</h1>
+                        <p class="text-slate-400 text-sm">Gerencie o repertório e tons da missão</p>
+                    </div>
+
+                    <div class="glass-form mb-10" id="form-letras-container">
+                        <div class="flex gap-4 mb-4">
+                            <input type="text" id="letra-titulo" placeholder="Título da Música" class="flex-1 font-bold">
+                            <input type="text" id="letra-tom" placeholder="Tom" class="w-24 text-center text-gold font-bold">
+                        </div>
+                        
+                        <div class="editor-toolbar flex gap-1 mb-0 border-b-0 rounded-t-2xl">
+                            <button onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button>
+                            <button onclick="execEditorCommand('justifyCenter')"><i class="fas fa-align-center"></i></button>
+                            <button onclick="execEditorCommand('foreColor', '#D4AF37')"><i class="fas fa-font text-gold"></i></button>
+                        </div>
+                        <div id="letra-editor" contenteditable="true" class="rich-editor-area bg-slate-50 min-h-[200px] p-6 text-black outline-none border border-slate-200 rounded-b-2xl"></div>
+                        
+                        <div class="flex gap-3 mt-6">
+                            <button onclick="addLetra()" class="btn-gold-full flex-1">Salvar Música</button>
+                            <button onclick="cancelarEdicaoLetra()" id="btn-letra-cancel" class="hidden bg-slate-100 px-8 rounded-2xl text-slate-500 font-bold">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div id="list-letras" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                </section>
+
+                <!-- VIEW: CAIXA (FINANCEIRO PRO) -->
+                <section id="caixa-view" class="view hidden">
+                    <div class="view-header-flex mb-8">
+                        <div>
+                            <h1 class="text-3xl font-black text-black">Financeiro</h1>
+                            <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Gestão de Fundos e Caixinhas</p>
+                        </div>
+                        <button onclick="shareFinanceWhatsApp()" class="btn-whatsapp-premium">
+                            <i class="fab fa-whatsapp"></i> Compartilhar Saldos
+                        </button>
+                    </div>
+
+                    <div class="caixinhas-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <!-- CAIXINHA VIAGEM -->
+                        <div class="caixinha-card bg-gradient-to-br from-indigo-600 to-indigo-800 text-white border-none shadow-lg shadow-indigo-200">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-van-shuttle"></i></div>
+                                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Viagens</span>
+                            </div>
+                            <p class="text-xs opacity-80 mb-1">Saldo Disponível</p>
+                            <h2 id="saldo-viagem" class="text-2xl font-black">R$ 0,00</h2>
+                            <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-viagem" class="bg-white"></div></div>
+                        </div>
+
+                        <!-- CAIXINHA GRAVAÇÃO -->
+                        <div class="caixinha-card bg-gradient-to-br from-purple-600 to-purple-800 text-white border-none shadow-lg shadow-purple-200">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-microphone-lines"></i></div>
+                                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Gravação</span>
+                            </div>
+                            <p class="text-xs opacity-80 mb-1">Fundo de Produção</p>
+                            <h2 id="saldo-gravacao" class="text-2xl font-black">R$ 0,00</h2>
+                            <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-gravacao" class="bg-white"></div></div>
+                        </div>
+
+                        <!-- CAIXINHA RIFA -->
+                        <div class="caixinha-card bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-none shadow-lg shadow-emerald-200">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-ticket-alt"></i></div>
+                                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Rifas</span>
+                            </div>
+                            <p class="text-xs opacity-80 mb-1">Arrecadação Rifa</p>
+                            <h2 id="saldo-rifa" class="text-2xl font-black">R$ 0,00</h2>
+                            <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-rifa" class="bg-white"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="glass-form h-fit">
+                            <h3 class="text-lg font-black mb-6 flex items-center gap-2"><i class="fas fa-plus-circle text-gold"></i> Novo Lançamento</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Descrição</label>
+                                    <input type="text" id="caixa-desc" placeholder="Ex: Oferta Missa, Venda Rifa...">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Valor (R$)</label>
+                                    <input type="number" id="caixa-valor" placeholder="0,00">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Destino</label>
+                                        <select id="caixa-destino">
+                                            <option value="viagem">Caixa Viagem</option>
+                                            <option value="gravacao">Caixa Gravação</option>
+                                            <option value="rifa">Caixa Rifa</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tipo</label>
+                                        <select id="caixa-tipo">
+                                            <option value="in" class="text-emerald-500">Entrada (+)</option>
+                                            <option value="out" class="text-red-500">Saída (-)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button onclick="addFinanceiro()" class="btn-gold-full py-4 mt-2">Confirmar Lançamento</button>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                                <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                                    <h3 class="font-black text-slate-700 uppercase text-xs tracking-widest">Extrato de Movimentações</h3>
+                                    <i class="fas fa-list-ul text-slate-300"></i>
+                                </div>
+                                <div id="list-caixa" class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: DOCUMENTOS -->
+                <section id="docs-view" class="view hidden">
+                    <div class="flex justify-between items-center mb-6 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                        <div>
+                            <h1 class="text-3xl font-black text-black">Documentos</h1>
+                            <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Drive da Missão (Automático)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden min-h-[65vh] w-full">
+                        <iframe src="https://drive.google.com/embeddedfolderview?id=1nH_4BjYXUUvCXsdB1Vq_TpnETnn-wTCn#list" style="width:100%; height:100%; border:0; min-height: 65vh;" allow="autoplay"></iframe>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -291,13 +307,22 @@
     <!-- MODAL LETRAS -->
     <div id="lyric-modal" class="modal-overlay" onclick="closeModal()">
         <div class="modal-window" onclick="event.stopPropagation()">
-            <div class="modal-header-pro bg-black p-8 flex justify-between items-center text-white"><div class="modal-title-box"><h2 id="modal-titulo" class="text-2xl font-bold"></h2><span id="modal-tom" class="text-gold font-bold"></span></div><button onclick="closeModal()" class="text-white text-3xl">&times;</button></div>
-            <div class="modal-lyrics-body p-10"><div id="modal-corpo" class="text-black text-xl leading-relaxed"></div></div>
+            <div class="modal-header-pro bg-black p-8 flex justify-between items-center text-white">
+                <div class="modal-title-box">
+                    <h2 id="modal-titulo" class="text-2xl font-bold"></h2>
+                    <span id="modal-tom" class="text-gold font-bold"></span>
+                </div>
+                <button onclick="closeModal()" class="text-white text-3xl">&times;</button>
+            </div>
+            <div class="modal-lyrics-body p-10">
+                <div id="modal-corpo" class="text-black text-xl leading-relaxed"></div>
+            </div>
         </div>
     </div>
 
-    <script async defer src="https://apis.google.com/js/api.js"></script>
-    <script async defer src="https://accounts.google.com/gsi/client"></script>
+    <!-- DEPENDENCIES -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="window.gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="window.gisLoaded()"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
