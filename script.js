@@ -1,526 +1,221 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-// ==========================================
-// 1. CONFIGURAÇÕES E ESTADO GLOBAL
-// ==========================================
-const firebaseConfig = {
-    apiKey: "AIzaSyCyEZRT-PIwpLpvOAqffVKXp1fVaJfBMTs",
-    authDomain: "sedentos.firebaseapp.com",
-    projectId: "sedentos",
-    storageBucket: "sedentos.firebasestorage.app",
-    messagingSenderId: "52891411067",
-    appId: "1:52891411067:web:bac8f01d8ffa103a9378de",
-    measurementId: "G-L57HTLBGN2"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-const CLIENT_ID_GOOGLE = "52891411067-bac8f01d8ffa103a9378de.apps.googleusercontent.com";
-const GMAIL_SCOPES = "https://www.googleapis.com/auth/gmail.readonly";
-
-let editandoLetraId = null;
-let tokenClient;
-let listaDeFrasesNuvem = [];
-
-// ==========================================
-// 2. SISTEMA DE LOGIN E AUTENTICAÇÃO
-// ==========================================
-onAuthStateChanged(auth, (user) => {
-    const loginScreen = document.getElementById('login-screen');
-    const shell = document.getElementById('app-shell');
-    if (user) {
-        if(loginScreen) loginScreen.style.display = 'none';
-        if(shell) shell.style.display = 'flex';
-        iniciarSincronizacao();
-    } else {
-        if(loginScreen) loginScreen.style.display = 'flex';
-        if(shell) shell.style.display = 'none';
-    }
-});
-
-window.handleKeyLogin = () => {
-    const key = document.getElementById('access-key').value;
-    if(!key) return;
-    signInWithEmailAndPassword(auth, "missao@missaosedentos.com", key)
-        .catch(() => document.getElementById('login-error').classList.remove('hidden'));
-};
-
-window.handleLogout = () => { 
-    if(confirm("Deseja sair?")) signOut(auth); 
-};
-
-// ==========================================
-// 3. NAVEGAÇÃO E UI GERAL
-// ==========================================
-window.router = (id) => {
-    document.querySelectorAll('.view').forEach(v => {
-        v.classList.add('hidden');
-        v.classList.remove('active');
-    });
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    
-    const target = document.getElementById(id + '-view');
-    if(target) {
-        target.classList.remove('hidden');
-        target.classList.add('active');
-    }
-    
-    const navBtn = document.getElementById('nav-' + id);
-    if(navBtn) navBtn.classList.add('active');
-    
-    const bread = document.getElementById('breadcrumb');
-    if(bread) bread.innerText = id.toUpperCase();
-    
-    if (window.innerWidth <= 768) {
-        const sidebar = document.querySelector('.sidebar');
-        if(sidebar) sidebar.classList.remove('active');
-    }
-    
-    if(id === 'dashboard') sortearFraseFirebase();
-};
-
-window.toggleMobileMenu = () => document.querySelector('.sidebar').classList.toggle('active');
-window.execEditorCommand = (cmd, val = null) => document.execCommand(cmd, false, val);
-
-// ==========================================
-// 4. SINCRONIZAÇÃO DE DADOS (FIRESTORE)
-// ==========================================
-function iniciarSincronizacao() {
-    onSnapshot(query(collection(db, "agenda"), orderBy("data", "asc")), (snap) => renderAgenda(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-    onSnapshot(collection(db, "caixa"), (snap) => renderCaixa(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-    onSnapshot(collection(db, "letras"), (snap) => renderLetras(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-    onSnapshot(collection(db, "senhas"), (snap) => renderSenhas(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-    
-    onSnapshot(collection(db, "frases"), (snap) => {
-        listaDeFrasesNuvem = snap.docs.map(d => d.data());
-        sortearFraseFirebase();
-    });
-
-    fetchLiturgia();
-
-    onSnapshot(doc(db, "config", "gmail_cache"), (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.data();
-            const emails = data.mensagens || [];
-            const area = document.getElementById('gmail-status-area');
-            
-            if (!area) return;
-
-            if (emails.length > 0) {
-                const isExpanded = document.getElementById('gmail-card')?.classList.contains('col-span-full');
-                const maxH = isExpanded ? 'max-h-[400px] overflow-y-auto' : 'max-h-[140px] overflow-hidden';
-
-                let html = `<div id="gmail-list-container" class="mt-2 text-left transition-all duration-500 ease-in-out pr-2 ${maxH}">`;
-                html += `<div class="space-y-2">`;
-                emails.forEach(m => {
-                    const unreadName = m.unread ? "font-black text-slate-900" : "font-bold text-slate-500";
-                    const unreadTitle = m.unread ? "font-bold text-red-600" : "font-medium text-slate-500";
-                    const unreadDot = m.unread ? `<span class="bg-red-500 w-2 h-2 rounded-full inline-block mr-2 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>` : `<span class="w-2 h-2 rounded-full inline-block mr-2 bg-transparent"></span>`;
-                    const bgHov = m.unread ? "bg-white shadow-sm border border-red-50" : "bg-slate-50/50 border border-transparent";
-                    
-                    html += `
-                        <div class="p-3 rounded-2xl flex flex-col justify-center transition-colors ${bgHov}">
-                            <div class="flex items-center">
-                                ${unreadDot}
-                                <span class="text-[10px] ${unreadName} uppercase tracking-wider truncate">${m.de}</span>
-                            </div>
-                            <p class="text-[12px] ${unreadTitle} truncate ml-4 mt-1">${m.assunto}</p>
-                        </div>`;
-                });
-                html += `</div></div>`;
-                html += `<div class="text-[9px] text-slate-400 uppercase font-bold mt-3 border-t border-slate-100 pt-3 text-center">Última sinc: ${new Date(data.ultimaSinc).toLocaleTimeString('pt-BR')} (Toque para expandir)</div>`;
-                area.innerHTML = html;
-            }
-        }
-    });
-
-    onSnapshot(doc(db, "config", "social"), (snapshot) => {
-        if (snapshot.exists()) {
-            const d = snapshot.data();
-            const igEl = document.getElementById('count-instagram');
-            const ytEl = document.getElementById('count-youtube');
-            const spEl = document.getElementById('count-spotify');
-            
-            if(igEl) igEl.innerText = Number(d.ig || 0).toLocaleString();
-            if(ytEl) ytEl.innerText = Number(d.yt || 0).toLocaleString();
-            if(spEl) spEl.innerText = Number(d.sp || 0).toLocaleString();
-        }
-    });
+:root {
+    --gold: #D4AF37;
+    --gold-light: #F1D592;
+    --sidebar-bg: #000000;
+    --main-bg: #F8FAFC;
+    --sidebar-w: 280px;
 }
 
-// ==========================================
-// 5. GMAIL API INTEGRATION
-// ==========================================
-function initGapi() {
-    if (window.gapi && window.gapi.load) {
-        gapi.load('client', async () => await gapi.client.init({ discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest"] }));
-    } else {
-        setTimeout(initGapi, 100);
-    }
-}
-initGapi();
-
-function initGis() {
-    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
-        tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID_GOOGLE, scope: GMAIL_SCOPES, callback: '' });
-    } else {
-        setTimeout(initGis, 100);
-    }
-}
-initGis();
-
-window.toggleGmailExpand = () => {
-    const card = document.getElementById('gmail-card');
-    if (card) {
-        card.classList.toggle('col-span-full');
-        const listContainer = document.getElementById('gmail-list-container');
-        if (listContainer) {
-            listContainer.classList.toggle('max-h-[140px]');
-            listContainer.classList.toggle('max-h-[400px]');
-            listContainer.classList.toggle('overflow-hidden');
-            listContainer.classList.toggle('overflow-y-auto');
-        }
-    }
-};
-
-window.handleGmailAuth = (e) => {
-    if(e) e.stopPropagation();
-    if (!tokenClient) return alert("Google carregando...");
-    tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) throw (resp);
-        document.getElementById('gmail-status-area').innerHTML = "<div class='py-8 text-center'><i class='fas fa-spinner fa-spin text-red-500 text-2xl mb-4 inline-block'></i><p class='text-[10px] uppercase font-bold tracking-widest animate-pulse'>Sincronizando MENSAGENS...</p></div>";
-        await syncGmailToFirebase();
-    };
-    tokenClient.requestAccessToken({prompt: 'consent'});
-};
-
-async function syncGmailToFirebase() {
-    try {
-        const response = await gapi.client.gmail.users.messages.list({ 'userId': 'me', 'maxResults': 8 });
-        const messages = response.result.messages || [];
-        let lista = [];
-        for (const msg of messages) {
-            const detail = await gapi.client.gmail.users.messages.get({ 'userId': 'me', 'id': msg.id });
-            const subjectHeader = detail.result.payload.headers.find(h => h.name === 'Subject');
-            const subject = subjectHeader ? subjectHeader.value : '(Sem Assunto)';
-            const fromHeader = detail.result.payload.headers.find(h => h.name === 'From');
-            const from = fromHeader ? fromHeader.value.split('<')[0].trim() : 'Desconhecido';
-            const isUnread = detail.result.labelIds ? detail.result.labelIds.includes('UNREAD') : false;
-            lista.push({ de: from, assunto: subject, unread: isUnread });
-        }
-        await setDoc(doc(db, "config", "gmail_cache"), { mensagens: lista, ultimaSinc: new Date().toISOString() });
-    } catch (err) { console.error(err); }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
 }
 
-// ==========================================
-// 5B. LITURGIA DIÁRIA API
-// ==========================================
-async function fetchLiturgia() {
-    try {
-        const resp = await fetch('https://liturgia.up.railway.app/');
-        const data = await resp.json();
-        
-        const titleEl = document.getElementById('liturgia-titulo');
-        const previaEl = document.getElementById('liturgia-previa');
-        
-        if (titleEl && data.evangelho && data.evangelho.referencia) {
-            titleEl.innerText = `Evangelho (${data.evangelho.referencia})`;
-        }
-        if (previaEl && data.evangelho && data.evangelho.texto) {
-            let limit = data.evangelho.texto.substring(0, 110);
-            previaEl.innerText = `"${limit}..."`;
-        }
-    } catch (e) {
-        console.error("Erro ao buscar liturgia", e);
-        const titleEl = document.getElementById('liturgia-titulo');
-        const previaEl = document.getElementById('liturgia-previa');
-        if (titleEl) titleEl.innerText = "Liturgia de Hoje";
-        if (previaEl) previaEl.innerText = "Mergulhe na palavra do dia e assista à homilia.";
-    }
+/* FIXO DESKTOP / ROLÁVEL MOBILE */
+body { 
+    background-color: var(--main-bg); 
+    color: #0F172A; 
+    height: 100vh; 
+    overflow: hidden; 
 }
 
-// ==========================================
-// 6. OPERAÇÕES CRUD GERAIS
-// ==========================================
-window.addAgenda = async () => {
-    const desc = document.getElementById('agenda-desc').value;
-    const local = document.getElementById('agenda-local').value;
-    const data = document.getElementById('agenda-data').value;
-    if(desc && data) await addDoc(collection(db, "agenda"), { desc, local, data });
-};
+/* UTILITÁRIOS BASE */
+.text-center { text-align: center; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.justify-center { justify-content: center; }
 
-window.addFinanceiro = async () => {
-    const desc = document.getElementById('caixa-desc').value;
-    const valorInput = document.getElementById('caixa-valor').value;
-    const destino = document.getElementById('caixa-destino').value;
-    const tipo = document.getElementById('caixa-tipo').value;
+/* SHELL & SIDEBAR */
+.app-shell { 
+    display: flex; 
+    height: 100vh; 
+    width: 100%; 
+}
 
-    if (!desc || !valorInput) return alert("Preencha descrição e valor!");
+.sidebar { 
+    width: var(--sidebar-w); 
+    background: #000; 
+    color: white; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 40px 20px; 
+    flex-shrink: 0; 
+    border-right: 1px solid rgba(212, 175, 55, 0.15); 
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+/* Scrollbar styling for sidebar */
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background-color: rgba(212, 175, 55, 0.3); border-radius: 10px; }
+.sidebar-header { margin-bottom: 50px; }
+.brand-logo-box { 
+    width: 64px; 
+    height: 64px; 
+    border-radius: 18px; 
+    background: #111; 
+    border: 1px solid rgba(212, 175, 55, 0.4); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+.brand-name { display: block; font-size: 1.6rem; font-weight: 800; letter-spacing: -1px; }
+.brand-tagline { display: block; font-size: 0.65rem; font-weight: 700; color: var(--gold); letter-spacing: 3px; margin-top: 2px; }
 
-    try {
-        await addDoc(collection(db, "caixa"), {
-            desc: desc,
-            valor: Number(valorInput), 
-            destino: destino,
-            tipo: tipo,
-            data: new Date().toISOString()
-        });
-        
-        document.getElementById('caixa-desc').value = "";
-        document.getElementById('caixa-valor').value = "";
-        console.log("✅ Lançamento salvo com sucesso!");
-    } catch (e) {
-        console.error("❌ Erro ao salvar:", e);
-        alert("Erro ao salvar: " + e.message);
-    }
-};
+.nav-section-title { font-size: 0.65rem; text-transform: uppercase; color: #444; margin: 30px 0 12px 12px; font-weight: 800; letter-spacing: 2px; }
 
-window.addLetra = async () => {
-    const t = document.getElementById('letra-titulo').value;
-    const tom = document.getElementById('letra-tom').value;
-    const c = document.getElementById('letra-editor').innerHTML;
-    if(!t || c === "") return alert("Preencha título e letra!");
+.nav-link { 
+    width: 100%; border: none; background: none; color: #71717a; padding: 14px 18px; 
+    text-align: left; cursor: pointer; border-radius: 16px; display: flex; 
+    align-items: center; gap: 15px; margin-bottom: 5px; transition: 0.3s; font-size: 0.9rem; font-weight: 600; 
+}
+.nav-link.active { background: var(--gold); color: #000; box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3); }
+
+/* MAIN AREA */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.main-header { height: 80px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #e2e8f0; }
+.digital-clock { font-weight: 800; color: var(--gold); font-size: 1.1rem; }
+
+.view-wrapper { flex: 1; padding: 40px; overflow-y: auto; }
+.view { display: none; animation: slideUp 0.4s ease forwards; }
+.view.active { display: block; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* DASHBOARD COMPONENTS */
+.bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.bento-card { background: white; padding: 32px; border-radius: 32px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+.col-span-2 { grid-column: span 2; }
+.highlight-card { background: #000; color: white; border: 1px solid var(--gold); }
+.mission-status-tag { background: var(--gold); color: black; padding: 4px 12px; border-radius: 20px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+
+/* NUBANK STYLE */
+.caixinha-card { 
+    background: white; 
+    padding: 14px 16px; 
+    border-radius: 16px; 
+    border: 1px solid #e2e8f0; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.caixinha-card h2 { font-size: 1.5rem !important; }
+.caixinha-card .w-10 { width: 32px !important; height: 32px !important; font-size: 0.8rem; }
+
+/* FINANCEIRO PRO */
+.cx-progress-bg { width: 100%; height: 6px; border-radius: 10px; overflow: hidden; }
+.cx-progress-bg div { height: 100%; background: var(--gold); border-radius: 10px; transition: 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+
+.transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; transition: 0.2s; }
+.transaction-item:hover { background-color: #F8FAFC; }
+.t-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+.t-in { background-color: #dcfce7; color: #15803d; }
+.t-out { background-color: #fee2e2; color: #b91c1c; }
+
+/* CARDS REPERTÓRIO */
+.letra-mini-card { background: white; padding: 24px; border-radius: 20px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.3s; }
+.card-pinned { border: 2px solid var(--gold); background: #FFFDF5; }
+.tom-badge { background: #000; color: var(--gold); padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; }
+.section-label-gold { grid-column: 1 / -1; font-size: 0.7rem; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; padding-left: 5px; }
+.section-label-slate { grid-column: 1 / -1; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; margin: 30px 0 10px 5px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+
+/* PLATAFORMAS DIGITAIS SEC. */
+.shortcut-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 24px 15px;
+    background: white;
+    border: 1px solid #eef2f6;
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+}
+.shortcut-btn:hover { border-color: var(--gold); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
+.shortcut-btn i { font-size: 1.8rem; }
+.shortcut-btn span { font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+
+/* SOCIAL STATS */
+.social-stat-item { display: flex; align-items: center; gap: 20px; padding: 25px; background: #ffffff; border-radius: 28px; border: 1px solid #f1f5f9; }
+.social-icon-box { width: 54px; height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+.social-info p { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+
+/* LEVITAÇÃO PREMIUM & EFEITOS */
+.dashboard-clickable { cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; }
+.dashboard-clickable:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px -12px rgba(212, 175, 55, 0.2); border-color: var(--gold) !important; z-index: 10; }
+.dashboard-clickable:active { transform: translateY(-2px) scale(0.98); }
+
+.btn-whatsapp-premium { background: #25D366; color: white; padding: 12px 24px; border-radius: 16px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); transition: 0.3s; }
+.btn-whatsapp-premium:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(37, 211, 102, 0.3); filter: brightness(1.1); }
+
+/* ALINHAMENTOS PADRÃO FORM */
+.glass-form {
+    background: #ffffff;
+    border-radius: 32px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05);
+    padding: 32px;
+    transition: all 0.3s ease;
+}
+.glass-form:hover {
+    box-shadow: 0 25px 50px -12px rgba(212, 175, 55, 0.1);
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+.btn-gold-full { background: var(--gold); color: white; padding: 14px; border-radius: 14px; font-weight: 800; width: 100%; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;}
+.btn-gold-full:hover { background: #b8972e; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3); }
+
+input, select {
+    width: 100%; 
+    padding: 14px 18px; 
+    border-radius: 14px; 
+    border: 2px solid #f1f5f9; 
+    background: #f8fafc;
+    outline: none; 
+    margin-bottom: 2px; 
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+input:focus, select:focus { 
+    border-color: var(--gold); 
+    background: white;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1); 
+}
+input::placeholder { color: #94a3b8; font-weight: 400; }
+
+/* EDITOR AREA */
+.rich-editor-area { min-height: 200px; padding: 20px; background: #F8FAFC; border: 1px solid #e2e8f0; border-radius: 16px; outline: none; color: #000; font-size: 1.1rem; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; z-index: 10000; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
+.modal-window { background: white; margin: 40px auto; width: 90%; max-width: 800px; border-radius: 40px; overflow: hidden; }
+
+/* RESPONSIVIDADE CELULAR UNIFICADA */
+@media (max-width: 768px) {
+    body { overflow-y: auto !important; height: auto !important; }
+    .app-shell { display: block !important; }
     
-    if (editandoLetraId) {
-        await updateDoc(doc(db, "letras", editandoLetraId), { titulo: t, tom, corpo: c });
-        cancelarEdicaoLetra();
-    } else {
-        await addDoc(collection(db, "letras"), { titulo: t, tom, corpo: c, pinned: false });
-    }
-    document.getElementById('letra-titulo').value = ""; 
-    document.getElementById('letra-editor').innerHTML = "";
-};
-
-window.saveSocialStats = async () => {
-    const ig = document.getElementById('input-ig').value;
-    const yt = document.getElementById('input-yt').value;
-    const sp = document.getElementById('input-sp').value;
-    await setDoc(doc(db, "config", "social"), { ig: ig||0, yt: yt||0, sp: sp||0 });
-    document.getElementById('social-modal').style.display = 'none';
-};
-
-window.deleteItem = async (col, id, e) => {
-    if(e) e.stopPropagation();
-    if(confirm("Excluir permanentemente?")) await deleteDoc(doc(db, col, id));
-};
-
-window.togglePin = async (id, currentStatus, e) => {
-    if(e) e.stopPropagation();
-    await updateDoc(doc(db, "letras", id), { pinned: !currentStatus });
-};
-
-window.prepararEdicaoLetra = (id, titulo, tom, corpo, e) => {
-    if(e) e.stopPropagation();
-    editandoLetraId = id;
-    document.getElementById('letra-titulo').value = titulo;
-    document.getElementById('letra-tom').value = tom;
-    document.getElementById('letra-editor').innerHTML = corpo;
-    document.getElementById('btn-letra-cancel').classList.remove('hidden');
-};
-
-window.cancelarEdicaoLetra = () => {
-    editandoLetraId = null;
-    document.getElementById('letra-titulo').value = ""; 
-    document.getElementById('letra-tom').value = "";
-    document.getElementById('letra-editor').innerHTML = "";
-    document.getElementById('btn-letra-cancel').classList.add('hidden');
-};
-
-window.prepararEdicaoSocial = () => document.getElementById('social-modal').style.display = 'block';
-
-window.addSenha = async () => {
-    const s = document.getElementById('senha-site').value;
-    const u = document.getElementById('senha-user').value;
-    const p = document.getElementById('senha-pass').value;
-    if(s && p) await addDoc(collection(db, "senhas"), { s, u, p });
-};
-
-// ==========================================
-// 7. RENDERIZADORES
-// ==========================================
-function renderAgenda(agenda) {
-    const list = document.getElementById('list-agenda');
-    if(!list) return;
-    const hoje = new Date().setHours(0,0,0,0);
+    .sidebar { position: fixed; left: -100%; z-index: 10001; width: 85%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.5); padding-top: 60px; }
+    .sidebar.active { left: 0; }
     
-    const futuras = agenda.filter(a => new Date(a.data + "T00:00:00").getTime() >= hoje);
-    const passadas = agenda.filter(a => new Date(a.data + "T00:00:00").getTime() < hoje).sort((a,b) => new Date(b.data) - new Date(a.data));
-
-    const gerarItem = (a, isOld) => `
-        <div class="mission-item ${isOld ? 'mission-concluded opacity-50' : ''} p-4 bg-white rounded-2xl flex justify-between items-center shadow-sm mb-2 border">
-            <div>
-                <span class="text-[10px] font-bold text-gold uppercase">${new Date(a.data + "T00:00:00").toLocaleDateString('pt-BR')}</span>
-                <h4 class="font-bold text-black">${a.desc} ${isOld ? '✓' : ''}</h4>
-                <p class="text-xs text-slate-400"><i class="fas fa-location-dot"></i> ${a.local}</p>
-            </div>
-            <button onclick="deleteItem('agenda', '${a.id}', event)" class="text-red-300">×</button>
-        </div>`;
-
-    list.innerHTML = 
-        (futuras.length ? '<p class="text-xs font-bold text-gold mb-3 uppercase tracking-widest">🚀 Próximas Missões</p>' + futuras.map(a => gerarItem(a, false)).join('') : '') +
-        (passadas.length ? '<p class="text-xs font-bold text-slate-400 mt-8 mb-3 uppercase tracking-widest">📅 Concluídas</p>' + passadas.map(a => gerarItem(a, true)).join('') : '');
-
-    if(futuras.length > 0) {
-        document.getElementById('dash-next-desc').innerText = futuras[0].desc;
-        document.getElementById('dash-next-info-local').innerText = futuras[0].local;
-        document.getElementById('dash-next-info-date').innerText = new Date(futuras[0].data + "T00:00:00").toLocaleDateString('pt-BR');
-    }
-}
-
-function renderCaixa(transacoes) {
-    console.log("📊 Dados recebidos do Firestore (Caixa):", transacoes);
-    let saldos = { viagem: 0, gravacao: 0, rifa: 0 };
-    const listExtrato = document.getElementById('list-caixa');
+    .main-header { position: sticky; top: 0; z-index: 999; padding: 0 20px; }
+    .mobile-menu-btn { display: block !important; background: #000; color: var(--gold); padding: 10px; border-radius: 12px; margin-right: 15px; }
     
-    if(!listExtrato) return;
-
-    if(transacoes.length === 0) {
-        listExtrato.innerHTML = `<p class="p-10 text-center text-slate-400 italic text-sm">Nenhuma movimentação encontrada na nuvem.</p>`;
-        document.getElementById('dash-saldo-total').innerText = "R$ 0,00";
-        return;
-    }
-
-    const sortedTrans = transacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-    listExtrato.innerHTML = sortedTrans.map(t => {
-        const isIn = t.tipo === 'in';
-        const destinoFinal = t.destino || 'viagem'; 
-        const valorNumerico = Number(t.valor) || 0;
-        
-        if (saldos.hasOwnProperty(destinoFinal)) {
-            saldos[destinoFinal] += isIn ? valorNumerico : -valorNumerico;
-        } else {
-            saldos.viagem += isIn ? valorNumerico : -valorNumerico;
-        }
-
-        return `
-        <div class="transaction-item flex justify-between items-center p-4 border-b border-slate-50 hover:bg-slate-50 transition-all">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center ${isIn ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}">
-                    <i class="fas ${isIn ? 'fa-arrow-up' : 'fa-arrow-down'} text-[10px]"></i>
-                </div>
-                <div>
-                    <h4 class="font-bold text-slate-800 text-sm">${t.desc}</h4>
-                    <p class="text-[9px] text-slate-400 font-bold uppercase">${destinoFinal} • ${new Date(t.data).toLocaleDateString('pt-BR')}</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="font-black ${isIn ? 'text-emerald-600' : 'text-red-600'} text-sm">
-                    ${isIn ? '+' : '-'} R$ ${valorNumerico.toFixed(2)}
-                </span>
-                <button onclick="deleteItem('caixa', '${t.id}', event)" class="text-slate-300 hover:text-red-500">
-                    <i class="fas fa-trash-alt text-xs"></i>
-                </button>
-            </div>
-        </div>`;
-    }).join('');
-
-    if(document.getElementById('saldo-viagem')) document.getElementById('saldo-viagem').innerText = `R$ ${saldos.viagem.toFixed(2)}`;
-    if(document.getElementById('saldo-gravacao')) document.getElementById('saldo-gravacao').innerText = `R$ ${saldos.gravacao.toFixed(2)}`;
-    if(document.getElementById('saldo-rifa')) document.getElementById('saldo-rifa').innerText = `R$ ${saldos.rifa.toFixed(2)}`;
+    .bento-grid, .caixinhas-grid, .grid, .grid-cols-2 { grid-template-columns: 1fr !important; }
+    .col-span-2, .col-span-full { grid-column: span 1 !important; }
+    .view-wrapper { padding: 20px; }
+    .digital-clock { display: none; }
     
-    if(document.getElementById('bar-viagem')) document.getElementById('bar-viagem').style.width = Math.min((saldos.viagem / 1000) * 100, 100) + "%";
-    if(document.getElementById('bar-gravacao')) document.getElementById('bar-gravacao').style.width = Math.min((saldos.gravacao / 5000) * 100, 100) + "%";
-    if(document.getElementById('bar-rifa')) document.getElementById('bar-rifa').style.width = Math.min((saldos.rifa / 2000) * 100, 100) + "%";
+    /* MODAL CELULAR */
+    .modal-overlay { overflow: hidden; display: none; align-items: flex-start; }
+    .modal-window { width: 100% !important; height: 100% !important; margin: 0 !important; border-radius: 0 !important; display: flex; flex-direction: column; }
+    .modal-header-pro { padding: 15px 20px; flex-shrink: 0; position: sticky; top: 0; z-index: 100; background: #000; }
+    .modal-lyrics-body { flex: 1; overflow-y: auto !important; -webkit-overflow-scrolling: touch; padding: 30px 20px 150px 20px !important; background: #fff; }
+    .modal-lyrics-body div, .modal-lyrics-body p, .modal-lyrics-body pre { font-size: 1.4rem !important; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
 
-    const totalGeral = saldos.viagem + saldos.gravacao + saldos.rifa;
-    const dashSaldo = document.getElementById('dash-saldo-total');
-    if (dashSaldo) dashSaldo.innerText = `R$ ${totalGeral.toFixed(2)}`;
+    /* OUTROS AJUSTES */
+    .balance-text { font-size: 2.2rem !important; }
 }
-
-function renderLetras(letras) {
-    const list = document.getElementById('list-letras');
-    if (!list) return;
-
-    const countEl = document.getElementById('dash-count-letras');
-    if (countEl) countEl.innerText = letras.length;
-
-    const fixadas = letras.filter(l => l.pinned);
-    const outras = letras.filter(l => !l.pinned).sort((a, b) => a.titulo.localeCompare(b.titulo));
-
-    const gerarCardHTML = (l) => {
-        const corpoEscapado = l.corpo.replace(/`/g, '\\`').replace(/'/g, "\\'");
-        return `
-        <div class="letra-mini-card ${l.pinned ? 'card-pinned shadow-gold/10' : 'bg-white shadow-sm'} flex justify-between items-center" onclick="openModal('${l.titulo}', '${l.tom}', \`${corpoEscapado}\`)">
-            <div class="flex-1">
-                <h4 class="font-extrabold text-slate-900 truncate pr-2">${l.titulo}</h4>
-                <span class="tom-badge mt-2 inline-block">${l.tom || 'N/A'}</span>
-            </div>
-            <div class="flex gap-1">
-                <button onclick="togglePin('${l.id}', ${l.pinned}, event)" class="p-2 ${l.pinned ? 'text-gold' : 'text-slate-200'} hover:scale-110 transition-transform">
-                    <i class="fas fa-thumbtack"></i>
-                </button>
-                <button onclick="prepararEdicaoLetra('${l.id}', '${l.titulo}', '${l.tom}', \`${corpoEscapado}\`, event)" class="text-indigo-400 p-2">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteItem('letras', '${l.id}', event)" class="text-red-200 hover:text-red-500 p-2">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>`;
-    };
-
-    let html = "";
-    if (fixadas.length > 0) {
-        html += `<p class="section-label-gold">📌 Principais da Semana (${fixadas.length})</p>`;
-        html += fixadas.map(gerarCardHTML).join('');
-    }
-    if (outras.length > 0) {
-        html += `<p class="section-label-slate">📚 Repertório Completo (${outras.length})</p>`;
-        html += outras.map(gerarCardHTML).join('');
-    }
-
-    list.innerHTML = html || `<p class="col-span-full text-center py-20 text-slate-400 italic">O hinário está vazio...</p>`;
-}
-
-function renderSenhas(senhas) {
-    const list = document.getElementById('list-senhas');
-    if(list) list.innerHTML = senhas.map(s => `<div class="glass flex justify-between p-4 mb-2 shadow-sm border bg-white rounded-xl"><div><p class="font-bold text-gold uppercase text-[10px]">${s.s}</p><p class="text-xs text-slate-500 font-bold">${s.u} | ${s.p}</p></div><button onclick="deleteItem('senhas', '${s.id}', event)" class="text-red-300">×</button></div>`).join('');
-}
-
-// ==========================================
-// 8. UTILITÁRIOS E MODAIS GERAIS
-// ==========================================
-window.openModal = (titulo, tom, corpo) => {
-    document.getElementById('modal-titulo').innerText = titulo;
-    document.getElementById('modal-tom').innerText = "Tom: " + tom;
-    document.getElementById('modal-corpo').innerHTML = corpo;
-    
-    const modalBody = document.querySelector('.modal-lyrics-body');
-    if(modalBody) modalBody.scrollTop = 0;
-
-    document.getElementById('lyric-modal').style.display = 'block';
-};
-window.closeModal = () => document.getElementById('lyric-modal').style.display = 'none';
-
-window.sortearFraseFirebase = () => {
-    const qEl = document.getElementById('saint-quote');
-    const aEl = document.getElementById('autor-santo');
-    if (listaDeFrasesNuvem.length > 0) {
-        const sorteada = listaDeFrasesNuvem[Math.floor(Math.random() * listaDeFrasesNuvem.length)];
-        if(qEl) qEl.innerText = `"${sorteada.texto}"`;
-        if(aEl) aEl.innerText = `— ${sorteada.autor}`;
-    }
-};
-
-setInterval(() => {
-    const c = document.getElementById('live-clock');
-    if(c) c.innerText = new Date().toLocaleTimeString('pt-BR');
-}, 1000);
-
-window.shareAgendaWhatsApp = () => {
-    let t = "*🎸 AGENDA - MISSÃO SEDENTOS*\n\n";
-    document.querySelectorAll('#list-agenda .mission-item:not(.mission-concluded)').forEach(i => {
-        t += `📅 *${i.querySelector('span').innerText}* - ${i.querySelector('h4').innerText}\n📍 ${i.querySelector('p').innerText}\n\n`;
-    });
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t + "_Salve Maria!_")}`);
-};
-
-window.shareFinanceWhatsApp = () => {
-    const t = document.getElementById('dash-saldo-total').innerText;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`*💰 FINANCEIRO - MISSÃO SEDENTOS*\n\nTOTAL: ${t}`)}`);
-};
