@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de gestão da Missão Sedentos com Financeiro, Agenda, Repertório e integração Gmail compartilhada.">
     <title>Missão Sedentos | Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +13,7 @@
 <body class="bg-[#F8FAFC]">
 
     <!-- O APP INICIA ESCONDIDO NO CSS, NÃO NO HTML -->
-    <div id="app-shell" class="app-shell" style="display: none;">
+    <div id="app-shell" class="app-shell">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand-container-vertical">
@@ -35,7 +36,6 @@
                 <p class="nav-section-title">Administração</p>
                 <button onclick="router('caixa')" class="nav-link" id="nav-caixa"><i class="fas fa-hand-holding-dollar"></i> <span>Financeiro</span></button>
                 <button onclick="router('docs')" class="nav-link" id="nav-docs"><i class="fas fa-file-invoice"></i> <span>Documentos</span></button>
-                <button onclick="router('senhas')" class="nav-link" id="nav-senhas"><i class="fas fa-key"></i> <span>Cofre</span></button>
             </nav>
 
             <div class="sidebar-footer">
@@ -109,15 +109,26 @@
                             </div>
                         </div>
 
-                        <div id="gmail-card" class="bento-card bg-white border-l-4 border-red-500 text-center transition-all duration-300 ease-in-out cursor-pointer hover:shadow-xl hover:-translate-y-1" onclick="toggleGmailExpand()">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="card-label">GMAIL MISSÃO</span>
-                                <button onclick="handleGmailAuth(event)" class="text-[9px] font-bold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded-full transition-colors uppercase tracking-wider"><i class="fas fa-sync-alt mr-1"></i> Sincronizar</button>
+                        <div id="gmail-card" class="bento-card bg-white border-l-4 border-red-500 text-center transition-all duration-300 ease-in-out hover:shadow-xl">
+                            <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="card-label">GMAIL MISSÃO</span>
+                                    <span id="gmail-account-info" class="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full truncate max-w-[150px] hidden" title=""></span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button id="btn-sync-gmail" type="button" onclick="handleGmailAuth(event)" class="text-[9px] font-bold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1.5 rounded-full transition-colors uppercase tracking-wider disabled:opacity-50 flex items-center min-h-[32px] focus:outline-none focus:ring-2 focus:ring-red-400"><i class="fas fa-sync-alt mr-1"></i> <span>Sincronizar</span></button>
+                                    <button id="btn-disconnect-gmail" type="button" onclick="desconectarGmail(event)" class="text-[9px] font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-full transition-colors uppercase tracking-wider hidden min-h-[32px] focus:outline-none focus:ring-2 focus:ring-slate-400" title="Desconectar Gmail deste navegador"><i class="fas fa-sign-out-alt mr-1"></i> Desconectar</button>
+                                    <button id="btn-clear-gmail-cache" type="button" onclick="abrirModalLimparCacheGmail(event)" class="text-[9px] font-bold text-slate-400 hover:text-red-600 bg-slate-50 hover:bg-red-50 px-2.5 py-1.5 rounded-full transition-colors uppercase tracking-wider min-h-[32px] focus:outline-none focus:ring-2 focus:ring-red-400" title="Limpar cache compartilhado da equipe"><i class="fas fa-trash-alt mr-1"></i> Limpar</button>
+                                    <button id="btn-toggle-gmail-expand" type="button" onclick="toggleGmailExpand(event)" class="text-slate-400 hover:text-red-600 hover:bg-slate-100 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 w-8 h-8 flex items-center justify-center min-h-[32px] min-w-[32px]" aria-expanded="false" aria-controls="gmail-status-area" aria-label="Expandir ou recolher lista de e-mails" title="Expandir ou recolher"><i class="fas fa-expand-alt text-xs" id="gmail-expand-icon"></i></button>
+                                </div>
                             </div>
                             <div id="gmail-status-area" class="mt-2 flex flex-col">
                                 <i class="fas fa-envelope text-red-100 text-3xl mb-2 mt-4 inline-block"></i>
-                                <p class="text-[10px] text-slate-400 mb-4">Clique em "Sincronizar" para conectar ao Gmail.</p>
+                                <p class="text-[10px] text-slate-400 mb-2">Conecte o Gmail para sincronizar as últimas mensagens.</p>
                             </div>
+                            <p class="text-[9px] text-slate-400 mt-2 italic text-center border-t border-slate-50 pt-2 flex items-center justify-center gap-1">
+                                <i class="fas fa-shield-alt text-[8px]"></i> Este painel é compartilhado com toda a equipe que possui a chave de acesso.
+                            </p>
                         </div>
 
                         <div class="bento-card text-center dashboard-clickable" onclick="router('letras')">
@@ -188,52 +199,255 @@
                 </section>
 
                 <!-- VIEW: AGENDA -->
-                <section id="agenda-view" class="view hidden">
-                    <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                                <section id="agenda-view" class="view hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
                         <h1 class="text-2xl font-black text-black">Agenda Missão</h1>
                         <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium">
                             <i class="fab fa-whatsapp mr-2"></i> Compartilhar
                         </button>
                     </div>
-                    <div class="glass-form p-8 mb-10">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 tracking-widest">Agendar Novo Compromisso</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="agenda-desc" placeholder="O que vai ser?">
-                            <input type="text" id="agenda-local" placeholder="Cidade/Local">
-                            <input type="date" id="agenda-data">
+
+                    <!-- Filter Section -->
+                    <div class="glass-form p-6 mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter"></i> Filtros da Agenda</h3>
+                            <button onclick="limparFiltrosAgenda()" class="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors">Limpar Filtros</button>
                         </div>
-                        <button onclick="addAgenda()" class="btn-gold-full mt-6">Confirmar Data</button>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="filtro-agenda-busca" placeholder="Buscar descrição ou local..." class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosAgenda()">
+                            <input type="date" id="filtro-agenda-data-inicio" class="w-full p-2 rounded-lg border border-slate-200 text-slate-600" onchange="aplicarFiltrosAgenda()">
+                            <input type="date" id="filtro-agenda-data-fim" class="w-full p-2 rounded-lg border border-slate-200 text-slate-600" onchange="aplicarFiltrosAgenda()">
+                            
+                            <select id="filtro-agenda-tipo" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosAgenda()">
+                                <option value="">Todos os Tipos</option>
+                                <option value="Ensaio">Ensaio</option>
+                                <option value="Missa">Missa</option>
+                                <option value="Show">Show</option>
+                                <option value="Evento">Evento</option>
+                                <option value="Reunião">Reunião</option>
+                                <option value="Gravação">Gravação</option>
+                                <option value="Formação">Formação</option>
+                                <option value="Viagem">Viagem</option>
+                                <option value="Compromisso">Compromisso</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                            <input type="text" id="filtro-agenda-responsavel" placeholder="Responsável..." class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosAgenda()">
+                            <select id="filtro-agenda-status" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosAgenda()">
+                                <option value="">Todos (Ativos)</option>
+                                <option value="proximos">Próximos</option>
+                                <option value="hoje">Hoje</option>
+                                <option value="concluidos">Concluídos</option>
+                                <option value="cancelados">Cancelados</option>
+                            </select>
+                        </div>
+                        <div class="mt-4 text-sm text-slate-500 font-medium" id="agenda-filter-count"></div>
                     </div>
-                    <div id="list-agenda" class="mt-8"></div>
+
+                    <div class="glass-form p-8 mb-10" id="agenda-form-container">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest" id="agenda-form-title">Agendar Novo Compromisso</h3>
+                            <button onclick="cancelarEdicaoAgenda()" id="btn-agenda-cancel" class="hidden text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Cancelar Edição</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="agenda-desc" class="block text-xs font-bold text-slate-500 mb-1">Título/Descrição *</label>
+                                <input type="text" id="agenda-desc" placeholder="Ex: Show de Evangelização" maxlength="150" class="w-full">
+                            </div>
+                            <div>
+                                <label for="agenda-tipo" class="block text-xs font-bold text-slate-500 mb-1">Tipo *</label>
+                                <select id="agenda-tipo" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
+                                    <option value="" disabled selected>Selecione</option>
+                                    <option value="Ensaio">Ensaio</option>
+                                    <option value="Missa">Missa</option>
+                                    <option value="Show">Show</option>
+                                    <option value="Evento">Evento</option>
+                                    <option value="Reunião">Reunião</option>
+                                    <option value="Gravação">Gravação</option>
+                                    <option value="Formação">Formação</option>
+                                    <option value="Viagem">Viagem</option>
+                                    <option value="Compromisso">Compromisso</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="agenda-data" class="block text-xs font-bold text-slate-500 mb-1">Data *</label>
+                                <input type="date" id="agenda-data" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label for="agenda-hora-inicio" class="block text-xs font-bold text-slate-500 mb-1">Início *</label>
+                                    <input type="time" id="agenda-hora-inicio" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label for="agenda-hora-fim" class="block text-xs font-bold text-slate-500 mb-1">Término</label>
+                                    <input type="time" id="agenda-hora-fim" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="agenda-local" class="block text-xs font-bold text-slate-500 mb-1">Local *</label>
+                                <input type="text" id="agenda-local" placeholder="Nome do local (Ex: Paróquia São José)" maxlength="150" class="w-full">
+                            </div>
+                            <div>
+                                <label for="agenda-endereco" class="block text-xs font-bold text-slate-500 mb-1">Endereço Completo</label>
+                                <input type="text" id="agenda-endereco" placeholder="Rua, Número, Bairro, Cidade" maxlength="200" class="w-full">
+                            </div>
+                            <div>
+                                <label for="agenda-maps" class="block text-xs font-bold text-slate-500 mb-1">Link do Google Maps</label>
+                                <input type="url" id="agenda-maps" placeholder="https://maps.google.com/..." maxlength="500" class="w-full">
+                            </div>
+                            <div>
+                                <label for="agenda-responsavel" class="block text-xs font-bold text-slate-500 mb-1">Responsável *</label>
+                                <input type="text" id="agenda-responsavel" placeholder="Nome do responsável" maxlength="100" class="w-full">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="agenda-participantes" class="block text-xs font-bold text-slate-500 mb-1">Participantes</label>
+                                <textarea id="agenda-participantes" placeholder="Nomes (separados por vírgula)" rows="2" maxlength="500" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"></textarea>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="agenda-obs" class="block text-xs font-bold text-slate-500 mb-1">Observações</label>
+                                <textarea id="agenda-obs" placeholder="Detalhes adicionais..." rows="2" maxlength="1000" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"></textarea>
+                            </div>
+                        </div>
+                        <div id="agenda-error" class="hidden mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-bold text-center border border-red-100"></div>
+                        <div id="agenda-success" class="hidden mt-4 p-3 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold text-center border border-emerald-100">Lançamento salvo com sucesso!</div>
+                        
+                        <button onclick="addAgenda()" id="btn-add-agenda" class="btn-gold-full mt-6 w-full">Confirmar Evento</button>
+                    </div>
+                    
+                    <div id="list-agenda" class="mt-8 flex flex-col gap-3"></div>
                 </section>
 
                 <!-- VIEW: REPERTÓRIO -->
                 <section id="letras-view" class="view hidden">
-                    <div class="mb-8">
-                        <h1 class="text-3xl font-black text-black tracking-tight">Músicas</h1>
-                        <p class="text-slate-400 text-sm">Gerencie o repertório e tons da missão</p>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
+                        <div>
+                            <h1 class="text-2xl font-black text-black">Repertório Musical</h1>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Cifras, Letras e Tons da Missão</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="letras-header-stats" class="text-xs font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-xl">0 músicas ativas</span>
+                        </div>
                     </div>
 
-                    <div class="glass-form mb-10" id="form-letras-container">
-                        <div class="flex gap-4 mb-4">
-                            <input type="text" id="letra-titulo" placeholder="Título da Música" class="flex-1 font-bold">
-                            <input type="text" id="letra-tom" placeholder="Tom" class="w-24 text-center text-gold font-bold">
+                    <!-- Filtros do Repertório -->
+                    <div class="glass-form p-6 mb-8" id="filtro-letras-container">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter mr-1"></i> Filtros do Repertório</h3>
+                            <button onclick="limparFiltrosLetras()" class="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors">Limpar Filtros</button>
                         </div>
-                        
-                        <div class="editor-toolbar flex gap-1 mb-0 border-b-0 rounded-t-2xl">
-                            <button onclick="execEditorCommand('bold')"><i class="fas fa-bold"></i></button>
-                            <button onclick="execEditorCommand('justifyCenter')"><i class="fas fa-align-center"></i></button>
-                            <button onclick="execEditorCommand('foreColor', '#D4AF37')"><i class="fas fa-font text-gold"></i></button>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label for="filtro-letras-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca</label>
+                                <input type="text" id="filtro-letras-busca" placeholder="Título ou intérprete..." class="w-full" oninput="aplicarFiltrosLetras()">
+                            </div>
+                            
+                            <div>
+                                <label for="filtro-letras-tom" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tom</label>
+                                <select id="filtro-letras-tom" class="w-full" onchange="aplicarFiltrosLetras()">
+                                    <option value="">Todos os Tons</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="filtro-letras-categoria" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
+                                <select id="filtro-letras-categoria" class="w-full" onchange="aplicarFiltrosLetras()">
+                                    <option value="">Todas as Categorias</option>
+                                    <option value="Autoral">Autoral</option>
+                                    <option value="Animação">Animação</option>
+                                    <option value="Louvor">Louvor</option>
+                                    <option value="Adoração">Adoração</option>
+                                    <option value="Mariana">Mariana</option>
+                                    <option value="Espírito Santo">Espírito Santo</option>
+                                    <option value="Comunhão">Comunhão</option>
+                                    <option value="Entrada">Entrada</option>
+                                    <option value="Ofertório">Ofertório</option>
+                                    <option value="Final">Final</option>
+                                    <option value="Outra">Outra</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="filtro-letras-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
+                                <select id="filtro-letras-status" class="w-full" onchange="aplicarFiltrosLetras()">
+                                    <option value="ativas">Músicas Ativas</option>
+                                    <option value="fixadas">📌 Fixadas da Semana</option>
+                                    <option value="arquivadas">📦 Arquivadas</option>
+                                    <option value="todas">Todas as Músicas</option>
+                                </select>
+                            </div>
                         </div>
-                        <div id="letra-editor" contenteditable="true" class="rich-editor-area bg-slate-50 min-h-[200px] p-6 text-black outline-none border border-slate-200 rounded-b-2xl"></div>
-                        
+                        <div class="mt-4 text-xs text-slate-500 font-bold flex justify-between items-center" id="letras-filter-count">
+                            <span>Carregando músicas...</span>
+                        </div>
+                    </div>
+
+                    <!-- Formulário de Cadastro / Edição -->
+                    <div class="glass-form p-8 mb-10" id="form-letras-container">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest" id="letras-form-title">Cadastrar Nova Música</h3>
+                            <button onclick="cancelarEdicaoLetra()" id="btn-letra-cancel" class="hidden text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Cancelar Edição</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div class="md:col-span-2">
+                                <label for="letra-titulo" class="block text-xs font-bold text-slate-500 mb-1">Título da Música *</label>
+                                <input type="text" id="letra-titulo" placeholder="Ex: Sopra em Nós" maxlength="150" class="w-full font-bold">
+                            </div>
+                            <div>
+                                <label for="letra-tom" class="block text-xs font-bold text-slate-500 mb-1">Tom (Acorde)</label>
+                                <input type="text" id="letra-tom" placeholder="Ex: G, Am, C#m..." maxlength="20" class="w-full font-bold text-gold">
+                            </div>
+                            <div>
+                                <label for="letra-categoria" class="block text-xs font-bold text-slate-500 mb-1">Categoria *</label>
+                                <select id="letra-categoria" class="w-full font-semibold">
+                                    <option value="" disabled selected>Selecione uma categoria</option>
+                                    <option value="Autoral">Autoral</option>
+                                    <option value="Animação">Animação</option>
+                                    <option value="Louvor">Louvor</option>
+                                    <option value="Adoração">Adoração</option>
+                                    <option value="Mariana">Mariana</option>
+                                    <option value="Espírito Santo">Espírito Santo</option>
+                                    <option value="Comunhão">Comunhão</option>
+                                    <option value="Entrada">Entrada</option>
+                                    <option value="Ofertório">Ofertório</option>
+                                    <option value="Final">Final</option>
+                                    <option value="Outra">Outra</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="letra-interprete" class="block text-xs font-bold text-slate-500 mb-1">Intérprete / Origem</label>
+                                <input type="text" id="letra-interprete" placeholder="Ex: Ministério Sedentos" maxlength="100" class="w-full">
+                            </div>
+                            <div>
+                                <label for="letra-bpm" class="block text-xs font-bold text-slate-500 mb-1">BPM (20 a 300)</label>
+                                <input type="number" id="letra-bpm" min="20" max="300" placeholder="Ex: 120" class="w-full">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label for="letra-audio" class="block text-xs font-bold text-slate-500 mb-1">Link de Áudio (HTTPS Seguro)</label>
+                                <input type="url" id="letra-audio" placeholder="https://exemplo.com/audio.mp3" maxlength="500" class="w-full">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="letra-corpo-texto" class="block text-xs font-bold text-slate-500 mb-1">Letra e Cifra * (Preserva quebras e alinhamento)</label>
+                            <textarea id="letra-corpo-texto" rows="12" placeholder="Digite ou cole aqui a letra e os acordes..." class="w-full font-mono text-sm p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all" style="white-space: pre-wrap; tab-size: 4;"></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="letra-obs" class="block text-xs font-bold text-slate-500 mb-1">Observações / Arranjo</label>
+                            <textarea id="letra-obs" rows="2" maxlength="500" placeholder="Ex: Solo de violão na introdução..." class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"></textarea>
+                        </div>
+
+                        <div id="letra-error" class="hidden mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-bold text-center border border-red-100"></div>
+                        <div id="letra-success" class="hidden mt-4 p-3 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold text-center border border-emerald-100">Música salva com sucesso!</div>
+
                         <div class="flex gap-3 mt-6">
-                            <button onclick="addLetra()" class="btn-gold-full flex-1">Salvar Música</button>
-                            <button onclick="cancelarEdicaoLetra()" id="btn-letra-cancel" class="hidden bg-slate-100 px-8 rounded-2xl text-slate-500 font-bold">Cancelar</button>
+                            <button onclick="addLetra()" id="btn-salvar-letra" class="btn-gold-full flex-1">Salvar Música</button>
                         </div>
                     </div>
 
-                    <div id="list-letras" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                    <!-- Lista de Cards -->
+                    <div id="list-letras" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </section>
 
                 <!-- VIEW: CAIXA (FINANCEIRO PRO) -->
@@ -287,42 +501,141 @@
                         <div class="glass-form h-fit">
                             <h3 class="text-lg font-black mb-6 flex items-center gap-2"><i class="fas fa-plus-circle text-gold"></i> Novo Lançamento</h3>
                             <div class="space-y-4">
+
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Data</label>
+                                    <input type="date" id="caixa-data" class="w-full">
+                                </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Descrição</label>
-                                    <input type="text" id="caixa-desc" placeholder="Ex: Oferta Missa, Venda Rifa...">
+                                    <input type="text" id="caixa-desc" placeholder="Ex: Oferta Missa, Venda Rifa..." class="w-full">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Valor (R$)</label>
-                                    <input type="number" id="caixa-valor" placeholder="0,00">
+                                    <input type="number" id="caixa-valor" step="0.01" placeholder="0,00" class="w-full">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável</label>
+                                    <input type="text" id="caixa-responsavel" placeholder="Quem recebeu/pagou" class="w-full" maxlength="50">
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Destino</label>
-                                        <select id="caixa-destino">
-                                            <option value="viagem">Caixa Viagem</option>
-                                            <option value="gravacao">Caixa Gravação</option>
-                                            <option value="rifa">Caixa Rifa</option>
+                                        <select id="caixa-destino" class="w-full">
+                                            <option value="viagem">Viagem</option>
+                                            <option value="gravacao">Gravação</option>
+                                            <option value="rifa">Rifa</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tipo</label>
-                                        <select id="caixa-tipo">
+                                        <select id="caixa-tipo" class="w-full">
                                             <option value="in" class="text-emerald-500">Entrada (+)</option>
                                             <option value="out" class="text-red-500">Saída (-)</option>
                                         </select>
                                     </div>
                                 </div>
-                                <button onclick="addFinanceiro()" class="btn-gold-full py-4 mt-2">Confirmar Lançamento</button>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Categoria</label>
+                                        <select id="caixa-categoria" class="w-full">
+                                            <option value="Oferta">Oferta</option>
+                                            <option value="Doação">Doação</option>
+                                            <option value="Rifa">Rifa</option>
+                                            <option value="Evento">Evento</option>
+                                            <option value="Transporte">Transporte</option>
+                                            <option value="Alimentação">Alimentação</option>
+                                            <option value="Produção musical">Produção musical</option>
+                                            <option value="Equipamentos">Equipamentos</option>
+                                            <option value="Comunicação e divulgação">Comunicação e divulgação</option>
+                                            <option value="Material">Material</option>
+                                            <option value="Taxas">Taxas</option>
+                                            <option value="Outros">Outros</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pagamento</label>
+                                        <select id="caixa-pagamento" class="w-full">
+                                            <option value="Dinheiro">Dinheiro</option>
+                                            <option value="PIX">PIX</option>
+                                            <option value="Transferência">Transferência</option>
+                                            <option value="Cartão">Cartão</option>
+                                            <option value="Boleto">Boleto</option>
+                                            <option value="Outro">Outro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">URL do Comprovante (Opcional)</label>
+                                    <input type="url" id="caixa-comprovante" placeholder="https://..." class="w-full">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Observação (Opcional)</label>
+                                    <textarea id="caixa-obs" rows="2" placeholder="Detalhes adicionais..." class="w-full p-4 rounded-xl border border-slate-200" maxlength="300"></textarea>
+                                </div>
+                                <div id="caixa-error" class="text-red-500 text-xs font-bold hidden"></div>
+                                <div id="caixa-success" class="text-emerald-500 text-xs font-bold hidden">Salvo com sucesso!</div>
+                                <button id="btn-add-financeiro" onclick="addFinanceiro()" class="btn-gold-full py-4 mt-2">Confirmar Lançamento</button>
                             </div>
                         </div>
 
                         <div class="lg:col-span-2">
                             <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-                                <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                                    <h3 class="font-black text-slate-700 uppercase text-xs tracking-widest">Extrato de Movimentações</h3>
-                                    <i class="fas fa-list-ul text-slate-300"></i>
+                                
+                                <div class="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-black text-slate-700 uppercase text-xs tracking-widest">Extrato</h3>
+                                        <span id="caixa-filtered-count" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-full font-bold">0</span>
+                                    </div>
+                                    <button onclick="exportarCSV()" class="btn-white text-xs py-2 px-4 shadow-sm border border-slate-200 rounded-xl hover:bg-slate-50 font-bold">
+                                        <i class="fas fa-file-csv text-emerald-600 mr-1"></i> Exportar CSV
+                                    </button>
                                 </div>
-                                <div id="list-caixa" class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
+                                <!-- FILTROS -->
+                                <div class="p-4 bg-slate-50 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                    <input type="text" id="filtro-busca" placeholder="Buscar..." class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosCaixa()">
+                                    <input type="date" id="filtro-data-inicio" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                    <input type="date" id="filtro-data-fim" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                    <select id="filtro-destino" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                        <option value="">Todos os Destinos</option>
+                                        <option value="viagem">Viagem</option>
+                                        <option value="gravacao">Gravação</option>
+                                        <option value="rifa">Rifa</option>
+                                    </select>
+                                    <select id="filtro-tipo" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                        <option value="">Todas Entradas/Saídas</option>
+                                        <option value="in">Entrada</option>
+                                        <option value="out">Saída</option>
+                                    </select>
+                                    <select id="filtro-categoria" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                        <option value="">Todas as Categorias</option>
+                                        <option value="Oferta">Oferta</option>
+                                        <option value="Doação">Doação</option>
+                                        <option value="Rifa">Rifa</option>
+                                        <option value="Evento">Evento</option>
+                                        <option value="Transporte">Transporte</option>
+                                        <option value="Alimentação">Alimentação</option>
+                                        <option value="Produção musical">Produção musical</option>
+                                        <option value="Equipamentos">Equipamentos</option>
+                                        <option value="Comunicação e divulgação">Comunicação e divulgação</option>
+                                        <option value="Material">Material</option>
+                                        <option value="Taxas">Taxas</option>
+                                        <option value="Sem categoria">Sem categoria</option>
+                                        <option value="Estorno">Estorno</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                                    <select id="filtro-status" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                        <option value="">Todos os Status</option>
+                                        <option value="active">Ativo (Normal)</option>
+                                        <option value="cancelled">Cancelado</option>
+                                        <option value="reversed">Estornado (Original)</option>
+                                        <option value="reversal">Estorno (Corretivo)</option>
+                                    </select>
+                                    <input type="text" id="filtro-responsavel" placeholder="Responsável" class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosCaixa()">
+                                    <button onclick="limparFiltrosCaixa()" class="text-slate-500 font-bold hover:text-slate-800 transition-colors py-2"><i class="fas fa-eraser"></i> Limpar Filtros</button>
+                                </div>
+                                <div id="list-caixa" class="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
+
                                 </div>
                             </div>
                         </div>
@@ -354,24 +667,200 @@
             </div>
             <h2 class="text-2xl font-black text-black">MISSÃO SEDENTOS</h2>
             <p class="text-zinc-400 text-xs mb-8 uppercase tracking-widest font-bold">Digite a Chave de Acesso</p>
-            <input type="password" id="access-key" placeholder="••••••••" class="w-full p-5 bg-zinc-100 rounded-2xl border-none outline-none text-center text-xl font-bold tracking-widest text-black focus:ring-2 ring-gold">
-            <button onclick="handleKeyLogin()" class="btn-gold-full py-4 shadow-lg mt-4">Entrar na Missão</button>
+            <div class="relative w-full">
+                <input type="password" id="access-key" placeholder="••••••••" class="w-full p-5 bg-zinc-100 rounded-2xl border-none outline-none text-center text-xl font-bold tracking-widest text-black focus:ring-2 ring-gold pr-12">
+                <button type="button" id="toggle-password" class="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-zinc-400 hover:text-gold" aria-label="Mostrar senha" onclick="togglePassword()">
+                    <i class="fas fa-eye" id="toggle-password-icon"></i>
+                </button>
+            </div>
+            <button id="login-btn" onclick="handleKeyLogin()" class="btn-gold-full py-4 shadow-lg mt-4 flex justify-center items-center gap-2">
+                <span id="login-text">Entrar na Missão</span>
+                <i class="fas fa-spinner fa-spin hidden" id="login-spinner"></i>
+            </button>
             <p id="login-error" class="text-red-500 text-[10px] font-bold mt-4 hidden uppercase">Chave incorreta.</p>
         </div>
     </div>
 
-    <!-- MODAL LETRAS -->
-    <div id="lyric-modal" class="modal-overlay" onclick="closeModal()">
-        <div class="modal-window" onclick="event.stopPropagation()">
-            <div class="modal-header-pro bg-black p-8 flex justify-between items-center text-white">
-                <div class="modal-title-box">
-                    <h2 id="modal-titulo" class="text-2xl font-bold"></h2>
-                    <span id="modal-tom" class="text-gold font-bold"></span>
-                </div>
-                <button onclick="closeModal()" class="text-white text-3xl">&times;</button>
+    
+    <!-- MODAL CANCELAR -->
+    <div id="modal-cancelar" class="modal-overlay" onclick="fecharModalCancelar(event)" role="dialog" aria-modal="true" aria-labelledby="modal-cancelar-titulo">
+        <div class="modal-window p-8" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-cancelar-titulo" class="text-xl font-black text-red-600"><i class="fas fa-ban"></i> Cancelar Lançamento</h2>
+                <button onclick="fecharModalCancelar(event)" class="text-slate-400 hover:text-black"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-lyrics-body p-10">
-                <div id="modal-corpo" class="text-black text-xl leading-relaxed"></div>
+            <p class="text-sm text-slate-600 mb-4">Tem certeza? O valor deixará de compor os saldos, mas o registro continuará no histórico.</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pelo Cancelamento *</label>
+                    <input type="text" id="cancelar-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Motivo do Cancelamento *</label>
+                    <textarea id="cancelar-motivo" class="w-full p-4 rounded-xl border border-slate-200" rows="3" placeholder="Ex: Lançado duplicado..." maxlength="200"></textarea>
+                </div>
+            </div>
+            <div id="cancelar-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="fecharModalCancelar(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
+                <button id="btn-confirmar-cancelar" onclick="confirmarCancelamento()" class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Confirmar Cancelamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ESTORNO -->
+    <div id="modal-estorno" class="modal-overlay" onclick="fecharModalEstorno(event)" role="dialog" aria-modal="true" aria-labelledby="modal-estorno-titulo">
+        <div class="modal-window p-8" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-estorno-titulo" class="text-xl font-black text-amber-600"><i class="fas fa-undo-alt"></i> Estornar Lançamento</h2>
+                <button onclick="fecharModalEstorno(event)" class="text-slate-400 hover:text-black"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">Isso criará uma movimentação oposta para zerar o efeito deste lançamento. O lançamento original será mantido.</p>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Data do Estorno *</label>
+                    <input type="date" id="estorno-data" class="w-full">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pelo Estorno *</label>
+                    <input type="text" id="estorno-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Motivo do Estorno *</label>
+                    <textarea id="estorno-motivo" class="w-full p-4 rounded-xl border border-slate-200" rows="3" placeholder="Ex: Valor devolvido..." maxlength="200"></textarea>
+                </div>
+            </div>
+            <div id="estorno-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="fecharModalEstorno(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
+                <button id="btn-confirmar-estorno" onclick="confirmarEstorno()" class="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 hover:bg-amber-700 transition-colors">Confirmar Estorno</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MODO APRESENTAÇÃO DE MÚSICA -->
+    <div id="lyric-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-titulo" onclick="closeModal()">
+        <div class="modal-window flex flex-col max-h-[92vh] h-full transition-colors duration-300" id="presentation-window" onclick="event.stopPropagation()">
+            <!-- Header fixo / controles -->
+            <div class="p-6 border-b flex flex-wrap justify-between items-center gap-4 transition-colors duration-300" id="presentation-header">
+                <div class="flex-1 min-w-[200px]">
+                    <div class="flex items-center gap-3">
+                        <h2 id="modal-titulo" class="text-2xl font-black truncate"></h2>
+                        <span id="modal-pinned-badge" class="hidden text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full"><i class="fas fa-thumbtack"></i> Fixada</span>
+                        <span id="modal-archived-badge" class="hidden text-xs bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-full"><i class="fas fa-box-archive"></i> Arquivada</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 mt-2 text-xs font-bold">
+                        <span id="modal-tom" class="text-gold bg-black px-2.5 py-1 rounded-lg"></span>
+                        <span id="modal-categoria" class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg"></span>
+                        <span id="modal-interprete" class="text-slate-500 hidden"></span>
+                        <span id="modal-bpm" class="text-slate-500 hidden"></span>
+                    </div>
+                </div>
+
+                <!-- Barra de ferramentas do Modo Apresentação -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="ajustarFonteApresentacao(-2)" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-sm hover:bg-slate-100 transition-colors" title="Diminuir fonte" aria-label="Diminuir fonte">A-</button>
+                    <button type="button" onclick="resetarFonteApresentacao()" class="px-3 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-xs hover:bg-slate-100 transition-colors" title="Tamanho padrão" aria-label="Tamanho padrão">100%</button>
+                    <button type="button" onclick="ajustarFonteApresentacao(2)" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-sm hover:bg-slate-100 transition-colors" title="Aumentar fonte" aria-label="Aumentar fonte">A+</button>
+                    
+                    <button type="button" onclick="alternarTemaApresentacao()" id="btn-theme-presentation" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-sm hover:bg-slate-100 transition-colors" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    
+                    <button type="button" onclick="alternarFullscreenApresentacao()" id="btn-fullscreen-presentation" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-sm hover:bg-slate-100 transition-colors" title="Tela Cheia" aria-label="Tela Cheia">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    
+                    <button type="button" onclick="rolarInicioApresentacao()" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-sm hover:bg-slate-100 transition-colors" title="Rolar para o início" aria-label="Rolar para o início">
+                        <i class="fas fa-arrow-up"></i>
+                    </button>
+                    
+                    <a id="modal-audio-btn" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center gap-1 text-xs font-bold hover:bg-emerald-100 transition-colors" aria-label="Ouvir áudio">
+                        <i class="fas fa-play"></i> <span>Áudio</span>
+                    </a>
+
+                    <button type="button" onclick="closeModal()" id="btn-close-presentation" class="w-10 h-10 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center text-lg transition-colors font-bold" title="Fechar" aria-label="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo da letra com rolagem fluida -->
+            <div class="modal-lyrics-body p-8 flex-1 overflow-y-auto" id="presentation-body">
+                <pre id="modal-corpo" class="font-mono whitespace-pre-wrap leading-relaxed text-lg select-text"></pre>
+                
+                <div id="modal-obs-container" class="mt-10 p-5 rounded-2xl border hidden">
+                    <p class="text-xs font-bold uppercase tracking-wider mb-1 opacity-70"><i class="fas fa-info-circle"></i> Observações do Arranjo</p>
+                    <p id="modal-obs" class="text-sm font-medium whitespace-pre-wrap"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ARQUIVAR MÚSICA -->
+    <div id="modal-letra-arquivar" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-letra-arquivar-titulo" onclick="fecharModalArquivarLetra(event)">
+        <div class="modal-window p-8 max-w-md" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-letra-arquivar-titulo" class="text-xl font-black text-slate-800"><i class="fas fa-box-archive text-amber-500 mr-2"></i> Arquivar Música</h2>
+                <button onclick="fecharModalArquivarLetra(event)" class="text-slate-400 hover:text-black" aria-label="Fechar modal"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">A música sairá do repertório ativo, mas continuará preservada e poderá ser restaurada a qualquer momento.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="arquivar-letra-resp" class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pelo Arquivamento *</label>
+                    <input type="text" id="arquivar-letra-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                </div>
+            </div>
+            <div id="arquivar-letra-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="fecharModalArquivarLetra(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
+                <button id="btn-confirmar-arquivar-letra" onclick="confirmarArquivamentoLetra()" class="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 hover:bg-amber-700 transition-colors">Confirmar Arquivamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RESTAURAR MÚSICA -->
+    <div id="modal-letra-restaurar" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-letra-restaurar-titulo" onclick="fecharModalRestaurarLetra(event)">
+        <div class="modal-window p-8 max-w-md" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-letra-restaurar-titulo" class="text-xl font-black text-slate-800"><i class="fas fa-rotate-left text-amber-500 mr-2"></i> Restaurar Música</h2>
+                <button onclick="fecharModalRestaurarLetra(event)" class="text-slate-400 hover:text-black" aria-label="Fechar modal"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">A música retornará ao repertório ativo da missão.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="restaurar-letra-resp" class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pela Restauração *</label>
+                    <input type="text" id="restaurar-letra-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                </div>
+            </div>
+            <div id="restaurar-letra-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="fecharModalRestaurarLetra(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
+                <button id="btn-confirmar-restaurar-letra" onclick="confirmarRestauracaoLetra()" class="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 hover:bg-amber-700 transition-colors">Confirmar Restauração</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LIMPAR CACHE GMAIL -->
+    <div id="modal-gmail-limpar-cache" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-gmail-limpar-titulo" onclick="fecharModalLimparCacheGmail(event)">
+        <div class="modal-window p-8 max-w-md" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modal-gmail-limpar-titulo" class="text-xl font-black text-slate-800"><i class="fas fa-trash-alt text-red-500 mr-2"></i> Limpar Cache do Gmail</h2>
+                <button type="button" onclick="fecharModalLimparCacheGmail(event)" class="text-slate-400 hover:text-black" aria-label="Fechar modal"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+                Esta ação removerá a lista de remetentes e assuntos do painel para <strong>toda a equipe</strong> até a próxima sincronização. Nenhuma mensagem será apagada do Gmail.
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <label for="gmail-limpar-cache-resp" class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pela Limpeza *</label>
+                    <input type="text" id="gmail-limpar-cache-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                </div>
+            </div>
+            <div id="gmail-limpar-cache-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="fecharModalLimparCacheGmail(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
+                <button id="btn-confirmar-limpar-gmail" type="button" onclick="confirmarLimpezaCacheGmail()" class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Confirmar Limpeza</button>
             </div>
         </div>
     </div>
@@ -407,5 +896,40 @@
     <script async defer src="https://apis.google.com/js/api.js"></script>
     <script async defer src="https://accounts.google.com/gsi/client"></script>
     <script type="module" src="script.js"></script>
+
+    <!-- Modal Cancelar Agenda -->
+    <div id="modal-agenda-cancelar" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="modal-agenda-cancelar-title">
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-fade-in relative" tabindex="-1">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500">
+                        <i class="fas fa-ban text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-agenda-cancelar-title" class="text-xl font-black text-black">Cancelar Compromisso</h3>
+                        <p class="text-sm text-slate-500">Esta ação não excluirá o evento.</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="agenda-cancelar-motivo" class="block text-xs font-bold text-slate-500 mb-1">Motivo do Cancelamento *</label>
+                        <input type="text" id="agenda-cancelar-motivo" placeholder="Ex: Imprevisto com local" class="w-full p-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label for="agenda-cancelar-resp" class="block text-xs font-bold text-slate-500 mb-1">Responsável pelo Cancelamento *</label>
+                        <input type="text" id="agenda-cancelar-resp" placeholder="Seu nome" class="w-full p-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all">
+                    </div>
+                </div>
+
+                <div id="agenda-cancelar-error" class="hidden mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-bold text-center border border-red-100"></div>
+
+                <div class="flex gap-3 mt-8">
+                    <button onclick="fecharModalAgendaCancelar()" class="flex-1 py-3 px-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">Voltar</button>
+                    <button id="btn-agenda-confirmar-cancelar" onclick="confirmarCancelamentoAgenda()" class="flex-1 py-3 px-4 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

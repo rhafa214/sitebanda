@@ -1,20 +1,36 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Missão Sedentos | Pro
 
-# Run and deploy your AI Studio app
+Sistema de gestão interna da equipe Missão Sedentos.
+Este sistema é de uso exclusivo para a equipe interna (4 a 6 pessoas).
 
-This contains everything you need to run your app locally.
+## Tecnologias Utilizadas
+- **Frontend:** HTML, CSS, e JavaScript (Vanilla)
+- **Estilização:** Tailwind CSS (via CDN)
+- **Banco de Dados & Autenticação:** Firebase (Firestore e Authentication)
+- **Ícones:** Font Awesome (via CDN)
 
-View your app in AI Studio: https://ai.studio/apps/89d28d4c-a92b-430d-92d5-e7c65d9267ac
+*(Nota: O package.json contém dependências como React, Vite e Gemini, mas o projeto roda inteiramente como HTML/JS/CSS estático.)*
 
-## Run Locally
+## Como Rodar Localmente
+Basta abrir o arquivo `index.html` em um navegador moderno ou iniciar um servidor estático simples na pasta raiz, por exemplo:
+```bash
+npx serve .
+```
 
-**Prerequisites:**  Node.js
+Como há arquivos de configuração do Vite no projeto (`vite.config.ts`, `package.json`), você também pode utilizar:
+```bash
+npm install
+npm run dev
+```
 
+## Integrações Externas
+- **Firebase:** Gerencia a autenticação e guarda os dados em tempo real.
+- **Google Drive (Iframe):** Exibição de documentos e pastas.
+- **Google Identity / Gmail:** Sincronização com o Gmail na aba de dashboard.
+- **Liturgia Diária:** Consumo da API `https://liturgia.up.railway.app/`.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Configurações e Segurança
+- O sistema usa um **login compartilhado** (e-mail fixo e chave única) configurado no Firebase Authentication.
+- Nenhuma chave secreta (`API_KEY`, senhas de serviço) deve ser colocada neste repositório. O acesso de banco do Firebase frontend é protegido pelas regras do Firestore.
+- **AS REGRAS ATIVAS DO FIRESTORE PRECISAM SER CONFERIDAS NO CONSOLE DO FIREBASE.**
+- O "Cofre" de senhas foi removido do frontend e do código fonte por segurança.

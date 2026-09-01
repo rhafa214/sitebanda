@@ -1,6 +1,8 @@
 {
   "name": "Sedentos gestão",
-  "description": "",
+  "description": "Sistema de gestão da Missão Sedentos com Financeiro, Agenda, Repertório e integração Gmail compartilhada.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
