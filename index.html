@@ -143,12 +143,15 @@
                         </div>
 
                         <div class="bento-card col-span-full">
-                            <p class="card-label mb-4">PLATAFORMAS DIGITAIS</p>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <a href="https://mail.google.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
-                                <a href="https://dashboard.offstep.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
-                                <a href="https://artists.spotify.com/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fab fa-spotify text-green-500"></i><span>Spotify for Artists</span></a>
-                                <a href="https://www.instagram.com/missaosedentos/" target="_blank" class="shortcut-btn dashboard-clickable"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
+                            <p class="card-label mb-4">PLATAFORMAS DIGITAIS & LINKS DA MISSÃO</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                                <a href="https://mail.google.com/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
+                                <a href="https://dashboard.offstep.com/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
+                                <a href="https://artists.spotify.com/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-spotify text-green-500"></i><span>Spotify</span></a>
+                                <a href="https://www.instagram.com/missaosedentos/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
+                                <a href="https://missaosedentos.com.br" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-globe text-blue-500"></i><span>Site Oficial</span></a>
+                                <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-music text-purple-500"></i><span>Acervo Musical</span></a>
+                                <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-google-drive text-amber-500"></i><span>Drive Missão</span></a>
                             </div>
                         </div>
 
@@ -199,7 +202,7 @@
                 </section>
 
                 <!-- VIEW: AGENDA -->
-                                <section id="agenda-view" class="view hidden">
+                <section id="agenda-view" class="view hidden">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
                         <h1 class="text-2xl font-black text-black">Agenda Missão</h1>
                         <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium">
@@ -210,35 +213,33 @@
                     <!-- Filter Section -->
                     <div class="glass-form p-6 mb-8">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter"></i> Filtros da Agenda</h3>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter mr-1"></i> Filtros da Agenda</h3>
                             <button onclick="limparFiltrosAgenda()" class="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors">Limpar Filtros</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="filtro-agenda-busca" placeholder="Buscar descrição ou local..." class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosAgenda()">
-                            <input type="date" id="filtro-agenda-data-inicio" class="w-full p-2 rounded-lg border border-slate-200 text-slate-600" onchange="aplicarFiltrosAgenda()">
-                            <input type="date" id="filtro-agenda-data-fim" class="w-full p-2 rounded-lg border border-slate-200 text-slate-600" onchange="aplicarFiltrosAgenda()">
-                            
-                            <select id="filtro-agenda-tipo" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosAgenda()">
-                                <option value="">Todos os Tipos</option>
-                                <option value="Ensaio">Ensaio</option>
-                                <option value="Missa">Missa</option>
-                                <option value="Show">Show</option>
-                                <option value="Evento">Evento</option>
-                                <option value="Reunião">Reunião</option>
-                                <option value="Gravação">Gravação</option>
-                                <option value="Formação">Formação</option>
-                                <option value="Viagem">Viagem</option>
-                                <option value="Compromisso">Compromisso</option>
-                                <option value="Outro">Outro</option>
-                            </select>
-                            <input type="text" id="filtro-agenda-responsavel" placeholder="Responsável..." class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosAgenda()">
-                            <select id="filtro-agenda-status" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosAgenda()">
-                                <option value="">Todos (Ativos)</option>
-                                <option value="proximos">Próximos</option>
-                                <option value="hoje">Hoje</option>
-                                <option value="concluidos">Concluídos</option>
-                                <option value="cancelados">Cancelados</option>
-                            </select>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label for="filtro-agenda-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca</label>
+                                <input type="text" id="filtro-agenda-busca" placeholder="Buscar título ou local..." class="w-full" oninput="aplicarFiltrosAgenda()">
+                            </div>
+                            <div>
+                                <label for="filtro-agenda-data-inicio" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data Início</label>
+                                <input type="date" id="filtro-agenda-data-inicio" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
+                            </div>
+                            <div>
+                                <label for="filtro-agenda-data-fim" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data Fim</label>
+                                <input type="date" id="filtro-agenda-data-fim" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
+                            </div>
+                            <div>
+                                <label for="filtro-agenda-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
+                                <select id="filtro-agenda-status" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
+                                    <option value="">Todos (Ativos)</option>
+                                    <option value="proximos">Próximos</option>
+                                    <option value="hoje">Hoje</option>
+                                    <option value="concluidos">Concluídos</option>
+                                    <option value="cancelados">Cancelados</option>
+                                    <option value="todos">Todos os Eventos</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="mt-4 text-sm text-slate-500 font-medium" id="agenda-filter-count"></div>
                     </div>
@@ -249,69 +250,31 @@
                             <button onclick="cancelarEdicaoAgenda()" id="btn-agenda-cancel" class="hidden text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Cancelar Edição</button>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="agenda-desc" class="block text-xs font-bold text-slate-500 mb-1">Título/Descrição *</label>
-                                <input type="text" id="agenda-desc" placeholder="Ex: Show de Evangelização" maxlength="150" class="w-full">
-                            </div>
-                            <div>
-                                <label for="agenda-tipo" class="block text-xs font-bold text-slate-500 mb-1">Tipo *</label>
-                                <select id="agenda-tipo" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
-                                    <option value="" disabled selected>Selecione</option>
-                                    <option value="Ensaio">Ensaio</option>
-                                    <option value="Missa">Missa</option>
-                                    <option value="Show">Show</option>
-                                    <option value="Evento">Evento</option>
-                                    <option value="Reunião">Reunião</option>
-                                    <option value="Gravação">Gravação</option>
-                                    <option value="Formação">Formação</option>
-                                    <option value="Viagem">Viagem</option>
-                                    <option value="Compromisso">Compromisso</option>
-                                    <option value="Outro">Outro</option>
-                                </select>
+                            <div class="md:col-span-2">
+                                <label for="agenda-desc" class="block text-xs font-bold text-slate-500 mb-1">Título do Compromisso *</label>
+                                <input type="text" id="agenda-desc" placeholder="Ex: Show de Evangelização / Ensaio Geral" maxlength="150" class="w-full font-bold">
                             </div>
                             <div>
                                 <label for="agenda-data" class="block text-xs font-bold text-slate-500 mb-1">Data *</label>
                                 <input type="date" id="agenda-data" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
                             </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label for="agenda-hora-inicio" class="block text-xs font-bold text-slate-500 mb-1">Início *</label>
-                                    <input type="time" id="agenda-hora-inicio" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
-                                </div>
-                                <div>
-                                    <label for="agenda-hora-fim" class="block text-xs font-bold text-slate-500 mb-1">Término</label>
-                                    <input type="time" id="agenda-hora-fim" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
-                                </div>
+                            <div>
+                                <label for="agenda-hora-inicio" class="block text-xs font-bold text-slate-500 mb-1">Horário (Opcional)</label>
+                                <input type="time" id="agenda-hora-inicio" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all">
                             </div>
                             <div>
-                                <label for="agenda-local" class="block text-xs font-bold text-slate-500 mb-1">Local *</label>
-                                <input type="text" id="agenda-local" placeholder="Nome do local (Ex: Paróquia São José)" maxlength="150" class="w-full">
+                                <label for="agenda-local" class="block text-xs font-bold text-slate-500 mb-1">Local / Referência</label>
+                                <input type="text" id="agenda-local" placeholder="Ex: Paróquia São José / Estúdio" maxlength="150" class="w-full">
                             </div>
                             <div>
-                                <label for="agenda-endereco" class="block text-xs font-bold text-slate-500 mb-1">Endereço Completo</label>
-                                <input type="text" id="agenda-endereco" placeholder="Rua, Número, Bairro, Cidade" maxlength="200" class="w-full">
-                            </div>
-                            <div>
-                                <label for="agenda-maps" class="block text-xs font-bold text-slate-500 mb-1">Link do Google Maps</label>
+                                <label for="agenda-maps" class="block text-xs font-bold text-slate-500 mb-1">Link de Localização (Google Maps / HTTPS)</label>
                                 <input type="url" id="agenda-maps" placeholder="https://maps.google.com/..." maxlength="500" class="w-full">
-                            </div>
-                            <div>
-                                <label for="agenda-responsavel" class="block text-xs font-bold text-slate-500 mb-1">Responsável *</label>
-                                <input type="text" id="agenda-responsavel" placeholder="Nome do responsável" maxlength="100" class="w-full">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="agenda-participantes" class="block text-xs font-bold text-slate-500 mb-1">Participantes</label>
-                                <textarea id="agenda-participantes" placeholder="Nomes (separados por vírgula)" rows="2" maxlength="500" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"></textarea>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="agenda-obs" class="block text-xs font-bold text-slate-500 mb-1">Observações</label>
-                                <textarea id="agenda-obs" placeholder="Detalhes adicionais..." rows="2" maxlength="1000" class="w-full p-3 rounded-xl border border-slate-200 text-slate-700 bg-white shadow-sm focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all"></textarea>
                             </div>
                         </div>
                         <div id="agenda-error" class="hidden mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-bold text-center border border-red-100"></div>
-                        <div id="agenda-success" class="hidden mt-4 p-3 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold text-center border border-emerald-100">Lançamento salvo com sucesso!</div>
+                        <div id="agenda-success" class="hidden mt-4 p-3 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold text-center border border-emerald-100">Compromisso salvo com sucesso!</div>
                         
-                        <button onclick="addAgenda()" id="btn-add-agenda" class="btn-gold-full mt-6 w-full">Confirmar Evento</button>
+                        <button onclick="addAgenda()" id="btn-add-agenda" class="btn-gold-full mt-6 w-full">Confirmar Compromisso</button>
                     </div>
                     
                     <div id="list-agenda" class="mt-8 flex flex-col gap-3"></div>
@@ -337,37 +300,32 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <label for="filtro-letras-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca</label>
-                                <input type="text" id="filtro-letras-busca" placeholder="Título ou intérprete..." class="w-full" oninput="aplicarFiltrosLetras()">
+                                <label for="filtro-letras-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca por Nome</label>
+                                <input type="text" id="filtro-letras-busca" placeholder="Nome da música..." class="w-full" oninput="aplicarFiltrosLetras()">
                             </div>
                             
+                            <div>
+                                <label for="filtro-letras-situacao" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Situação</label>
+                                <select id="filtro-letras-situacao" class="w-full" onchange="aplicarFiltrosLetras()">
+                                    <option value="">Todas as Situações</option>
+                                    <option value="idea">💡 Ideia</option>
+                                    <option value="in_progress">✍️ Em composição</option>
+                                    <option value="unfinished">⏳ Falta terminar</option>
+                                    <option value="finished">✅ Finalizada</option>
+                                    <option value="recorded">🎙️ Gravada</option>
+                                    <option value="sem_situacao">⚪ Sem situação</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <label for="filtro-letras-tom" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tom</label>
                                 <select id="filtro-letras-tom" class="w-full" onchange="aplicarFiltrosLetras()">
                                     <option value="">Todos os Tons</option>
                                 </select>
                             </div>
-                            
-                            <div>
-                                <label for="filtro-letras-categoria" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
-                                <select id="filtro-letras-categoria" class="w-full" onchange="aplicarFiltrosLetras()">
-                                    <option value="">Todas as Categorias</option>
-                                    <option value="Autoral">Autoral</option>
-                                    <option value="Animação">Animação</option>
-                                    <option value="Louvor">Louvor</option>
-                                    <option value="Adoração">Adoração</option>
-                                    <option value="Mariana">Mariana</option>
-                                    <option value="Espírito Santo">Espírito Santo</option>
-                                    <option value="Comunhão">Comunhão</option>
-                                    <option value="Entrada">Entrada</option>
-                                    <option value="Ofertório">Ofertório</option>
-                                    <option value="Final">Final</option>
-                                    <option value="Outra">Outra</option>
-                                </select>
-                            </div>
 
                             <div>
-                                <label for="filtro-letras-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
+                                <label for="filtro-letras-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status / Acervo</label>
                                 <select id="filtro-letras-status" class="w-full" onchange="aplicarFiltrosLetras()">
                                     <option value="ativas">Músicas Ativas</option>
                                     <option value="fixadas">📌 Fixadas da Semana</option>
@@ -389,8 +347,8 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div class="md:col-span-2">
-                                <label for="letra-titulo" class="block text-xs font-bold text-slate-500 mb-1">Título da Música *</label>
+                            <div>
+                                <label for="letra-titulo" class="block text-xs font-bold text-slate-500 mb-1">Nome da Música *</label>
                                 <input type="text" id="letra-titulo" placeholder="Ex: Sopra em Nós" maxlength="150" class="w-full font-bold">
                             </div>
                             <div>
@@ -398,38 +356,24 @@
                                 <input type="text" id="letra-tom" placeholder="Ex: G, Am, C#m..." maxlength="20" class="w-full font-bold text-gold">
                             </div>
                             <div>
-                                <label for="letra-categoria" class="block text-xs font-bold text-slate-500 mb-1">Categoria *</label>
-                                <select id="letra-categoria" class="w-full font-semibold">
-                                    <option value="" disabled selected>Selecione uma categoria</option>
-                                    <option value="Autoral">Autoral</option>
-                                    <option value="Animação">Animação</option>
-                                    <option value="Louvor">Louvor</option>
-                                    <option value="Adoração">Adoração</option>
-                                    <option value="Mariana">Mariana</option>
-                                    <option value="Espírito Santo">Espírito Santo</option>
-                                    <option value="Comunhão">Comunhão</option>
-                                    <option value="Entrada">Entrada</option>
-                                    <option value="Ofertório">Ofertório</option>
-                                    <option value="Final">Final</option>
-                                    <option value="Outra">Outra</option>
+                                <label for="letra-situacao" class="block text-xs font-bold text-slate-500 mb-1">Situação *</label>
+                                <select id="letra-situacao" class="w-full font-semibold">
+                                    <option value="" disabled selected>Selecione a situação</option>
+                                    <option value="idea">Ideia</option>
+                                    <option value="in_progress">Em composição</option>
+                                    <option value="unfinished">Falta terminar</option>
+                                    <option value="finished">Finalizada</option>
+                                    <option value="recorded">Gravada</option>
                                 </select>
                             </div>
-                            <div>
-                                <label for="letra-interprete" class="block text-xs font-bold text-slate-500 mb-1">Intérprete / Origem</label>
-                                <input type="text" id="letra-interprete" placeholder="Ex: Ministério Sedentos" maxlength="100" class="w-full">
-                            </div>
-                            <div>
-                                <label for="letra-bpm" class="block text-xs font-bold text-slate-500 mb-1">BPM (20 a 300)</label>
-                                <input type="number" id="letra-bpm" min="20" max="300" placeholder="Ex: 120" class="w-full">
-                            </div>
                             <div class="md:col-span-3">
-                                <label for="letra-audio" class="block text-xs font-bold text-slate-500 mb-1">Link de Áudio (HTTPS Seguro)</label>
-                                <input type="url" id="letra-audio" placeholder="https://exemplo.com/audio.mp3" maxlength="500" class="w-full">
+                                <label for="letra-drive" class="block text-xs font-bold text-slate-500 mb-1">Link do Drive / Pasta / Arquivo (HTTPS Seguro)</label>
+                                <input type="url" id="letra-drive" placeholder="https://drive.google.com/..." maxlength="500" class="w-full">
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label for="letra-corpo-texto" class="block text-xs font-bold text-slate-500 mb-1">Letra e Cifra * (Preserva quebras e alinhamento)</label>
+                            <label for="letra-corpo-texto" class="block text-xs font-bold text-slate-500 mb-1">Letra / Cifra * (Preserva quebras e alinhamento)</label>
                             <textarea id="letra-corpo-texto" rows="12" placeholder="Digite ou cole aqui a letra e os acordes..." class="w-full font-mono text-sm p-4 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all" style="white-space: pre-wrap; tab-size: 4;"></textarea>
                         </div>
 
@@ -751,9 +695,7 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-2 mt-2 text-xs font-bold">
                         <span id="modal-tom" class="text-gold bg-black px-2.5 py-1 rounded-lg"></span>
-                        <span id="modal-categoria" class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg"></span>
-                        <span id="modal-interprete" class="text-slate-500 hidden"></span>
-                        <span id="modal-bpm" class="text-slate-500 hidden"></span>
+                        <span id="modal-situacao" class="px-2.5 py-1 rounded-lg border font-semibold"></span>
                     </div>
                 </div>
 
@@ -775,8 +717,8 @@
                         <i class="fas fa-arrow-up"></i>
                     </button>
                     
-                    <a id="modal-audio-btn" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center gap-1 text-xs font-bold hover:bg-emerald-100 transition-colors" aria-label="Ouvir áudio">
-                        <i class="fas fa-play"></i> <span>Áudio</span>
+                    <a id="modal-drive-btn" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3 h-10 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center gap-1.5 text-xs font-bold hover:bg-blue-100 transition-colors" aria-label="Abrir no Google Drive">
+                        <i class="fab fa-google-drive"></i> <span>Drive</span>
                     </a>
 
                     <button type="button" onclick="closeModal()" id="btn-close-presentation" class="w-10 h-10 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center text-lg transition-colors font-bold" title="Fechar" aria-label="Fechar">

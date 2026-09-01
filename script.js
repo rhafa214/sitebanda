@@ -240,9 +240,9 @@ function iniciarSincronizacao() {
     cancelarListeners();
 
     unsubscribeFunctions.push(
-        onSnapshot(query(collection(db, "agenda"), orderBy("data", "asc")), 
+        onSnapshot(collection(db, "agenda"), 
             (snap) => renderAgenda(snap.docs.map(d => ({id: d.id, ...d.data()}))),
-            (error) => console.error("Erro sincronizando agenda:", error)
+            (error) => handleAgendaError(error)
         )
     );
     unsubscribeFunctions.push(
@@ -986,6 +986,18 @@ window.addFinanceiro = async () => {
     }
 };
 
+// ==========================================
+// UTILITÁRIO GLOBAL DE NORMALIZAÇÃO
+// ==========================================
+function normalizar(texto) {
+    if (texto === undefined || texto === null) return '';
+    return String(texto)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
 let transacoesGlobais = [];
 
 window.aplicarFiltrosCaixa = () => {
@@ -1006,8 +1018,6 @@ window.aplicarFiltrosCaixa = () => {
 
     const status = document.getElementById('filtro-status').value;
     const responsavel = document.getElementById('filtro-responsavel').value.trim().toLowerCase();
-
-    const normalizar = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
 
     const filtradas = transacoesGlobais.filter(t => {
         const tData = t.dataMovimentacao || (t.data ? t.data.split('T')[0] : '');
@@ -1033,12 +1043,12 @@ window.aplicarFiltrosCaixa = () => {
         }
         
         if (responsavel) {
-            const respNormal = normalizar((t.responsavel || "Não informado").toLowerCase());
+            const respNormal = normalizar(t.responsavel || "Não informado");
             if (!respNormal.includes(normalizar(responsavel))) return false;
         }
 
         if (busca) {
-            const descNormal = normalizar((t.desc || '').toLowerCase());
+            const descNormal = normalizar(t.desc || '');
             if (!descNormal.includes(normalizar(busca))) return false;
         }
 
@@ -1113,19 +1123,22 @@ window.exportarCSV = () => {
 // ==========================================
 // 6B. UTILITÁRIOS E SEGURANÇA DO REPERTÓRIO
 // ==========================================
-const CATEGORIAS_MUSICA = [
-    "Autoral",
-    "Animação",
-    "Louvor",
-    "Adoração",
-    "Mariana",
-    "Espírito Santo",
-    "Comunhão",
-    "Entrada",
-    "Ofertório",
-    "Final",
-    "Outra"
-];
+const SITUACOES_VALIDAS = ['idea', 'in_progress', 'unfinished', 'finished', 'recorded'];
+
+const MAPA_SITUACOES = {
+    'idea': { label: '💡 Ideia', badgeClass: 'bg-amber-50 text-amber-800 border border-amber-200' },
+    'in_progress': { label: '✍️ Em composição', badgeClass: 'bg-blue-50 text-blue-800 border border-blue-200' },
+    'unfinished': { label: '⏳ Falta terminar', badgeClass: 'bg-orange-50 text-orange-800 border border-orange-200' },
+    'finished': { label: '✅ Finalizada', badgeClass: 'bg-emerald-50 text-emerald-800 border border-emerald-200' },
+    'recorded': { label: '🎙️ Gravada', badgeClass: 'bg-purple-50 text-purple-800 border border-purple-200' }
+};
+
+function obterInfoSituacao(situacao) {
+    if (situacao && MAPA_SITUACOES[situacao]) {
+        return MAPA_SITUACOES[situacao];
+    }
+    return { label: '⚪ Sem situação', badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200' };
+}
 
 function extrairTextoHtmlLegado(html) {
     if (!html || typeof html !== 'string') return '';
@@ -1146,7 +1159,16 @@ function extrairTextoHtmlLegado(html) {
         return rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
     } catch (e) {
         console.warn("Erro ao extrair texto do HTML legado");
-        return html.replace(/<[^>]*>/g, '').trim();
+        return html
+            .replace(/<script[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[\s\S]*?<\/style>/gi, '')
+            .replace(/<br\s*[\/]?>/gi, '\n')
+            .replace(/<\/(p|div|tr|li|h[1-6])>/gi, '\n')
+            .replace(/<[^>]*>/g, '')
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
     }
 }
 
@@ -1161,31 +1183,22 @@ function obterTextoLetra(l) {
     return '';
 }
 
-function validarAudioUrl(urlStr) {
+function validarDriveUrl(urlStr) {
     if (!urlStr || typeof urlStr !== 'string') return { valido: true, url: '' };
     const trimmed = urlStr.trim();
     if (!trimmed) return { valido: true, url: '' };
     try {
         const parsed = new URL(trimmed);
         if (parsed.protocol !== 'https:') {
-            return { valido: false, erro: 'O link de áudio deve utilizar o protocolo seguro HTTPS.' };
+            return { valido: false, erro: 'O link do Drive deve utilizar o protocolo seguro HTTPS.' };
         }
         if (parsed.username || parsed.password) {
             return { valido: false, erro: 'URLs com credenciais embutidas não são permitidas.' };
         }
         return { valido: true, url: parsed.href };
     } catch (e) {
-        return { valido: false, erro: 'URL de áudio inválida. Certifique-se de incluir https://' };
+        return { valido: false, erro: 'URL inválida. Certifique-se de incluir https://' };
     }
-}
-
-function validarBpm(bpmVal) {
-    if (bpmVal === '' || bpmVal === null || bpmVal === undefined) return { valido: true, bpm: null };
-    const num = Number(bpmVal);
-    if (!Number.isInteger(num) || num < 20 || num > 300) {
-        return { valido: false, erro: 'O BPM deve ser um número inteiro entre 20 e 300.' };
-    }
-    return { valido: true, bpm: num };
 }
 
 function mostrarErroLetra(msg) {
@@ -1201,10 +1214,8 @@ function mostrarErroLetra(msg) {
 function limparFormularioLetra() {
     if (document.getElementById('letra-titulo')) document.getElementById('letra-titulo').value = "";
     if (document.getElementById('letra-tom')) document.getElementById('letra-tom').value = "";
-    if (document.getElementById('letra-categoria')) document.getElementById('letra-categoria').value = "";
-    if (document.getElementById('letra-interprete')) document.getElementById('letra-interprete').value = "";
-    if (document.getElementById('letra-bpm')) document.getElementById('letra-bpm').value = "";
-    if (document.getElementById('letra-audio')) document.getElementById('letra-audio').value = "";
+    if (document.getElementById('letra-situacao')) document.getElementById('letra-situacao').value = "";
+    if (document.getElementById('letra-drive')) document.getElementById('letra-drive').value = "";
     if (document.getElementById('letra-corpo-texto')) document.getElementById('letra-corpo-texto').value = "";
     if (document.getElementById('letra-obs')) document.getElementById('letra-obs').value = "";
     const errorEl = document.getElementById('letra-error');
@@ -1221,22 +1232,20 @@ window.addLetra = async () => {
 
     const titulo = (document.getElementById('letra-titulo')?.value || '').trim();
     const tom = (document.getElementById('letra-tom')?.value || '').trim();
-    const categoria = (document.getElementById('letra-categoria')?.value || '').trim();
-    const interprete = (document.getElementById('letra-interprete')?.value || '').trim();
-    const bpmInput = document.getElementById('letra-bpm')?.value;
-    const audioInput = document.getElementById('letra-audio')?.value;
+    const situacao = (document.getElementById('letra-situacao')?.value || '').trim();
+    const driveInput = (document.getElementById('letra-drive')?.value || '').trim();
     const corpoTexto = document.getElementById('letra-corpo-texto')?.value || '';
     const observacoes = (document.getElementById('letra-obs')?.value || '').trim();
 
     if (!titulo) {
-        mostrarErroLetra("Preencha o título da música!");
+        mostrarErroLetra("Preencha o nome da música!");
         document.getElementById('letra-titulo')?.focus();
         return;
     }
 
-    if (!categoria) {
-        mostrarErroLetra("Selecione uma categoria para a música!");
-        document.getElementById('letra-categoria')?.focus();
+    if (!situacao || !SITUACOES_VALIDAS.includes(situacao)) {
+        mostrarErroLetra("Selecione uma situação para a música!");
+        document.getElementById('letra-situacao')?.focus();
         return;
     }
 
@@ -1246,17 +1255,10 @@ window.addLetra = async () => {
         return;
     }
 
-    const valBpm = validarBpm(bpmInput);
-    if (!valBpm.valido) {
-        mostrarErroLetra(valBpm.erro);
-        document.getElementById('letra-bpm')?.focus();
-        return;
-    }
-
-    const valAudio = validarAudioUrl(audioInput);
-    if (!valAudio.valido) {
-        mostrarErroLetra(valAudio.erro);
-        document.getElementById('letra-audio')?.focus();
+    const valDrive = validarDriveUrl(driveInput);
+    if (!valDrive.valido) {
+        mostrarErroLetra(valDrive.erro);
+        document.getElementById('letra-drive')?.focus();
         return;
     }
 
@@ -1280,12 +1282,10 @@ window.addLetra = async () => {
                 transaction.update(docRef, {
                     titulo,
                     tom,
+                    situacao,
                     corpoTexto,
-                    categoria,
-                    interprete,
-                    bpm: valBpm.bpm,
                     observacoes,
-                    audioUrl: valAudio.url,
+                    driveUrl: valDrive.url || "",
                     formatVersion: 2,
                     updatedAt: serverTimestamp()
                 });
@@ -1295,12 +1295,10 @@ window.addLetra = async () => {
             await addDoc(collection(db, "letras"), {
                 titulo,
                 tom,
+                situacao,
                 corpoTexto,
-                categoria,
-                interprete,
-                bpm: valBpm.bpm,
                 observacoes,
-                audioUrl: valAudio.url,
+                driveUrl: valDrive.url || "",
                 pinned: false,
                 status: "active",
                 formatVersion: 2,
@@ -1336,10 +1334,8 @@ window.prepararEdicaoLetra = (l, e) => {
     editandoLetraId = l.id;
     if (document.getElementById('letra-titulo')) document.getElementById('letra-titulo').value = l.titulo || '';
     if (document.getElementById('letra-tom')) document.getElementById('letra-tom').value = l.tom || '';
-    if (document.getElementById('letra-categoria')) document.getElementById('letra-categoria').value = l.categoria || '';
-    if (document.getElementById('letra-interprete')) document.getElementById('letra-interprete').value = l.interprete || '';
-    if (document.getElementById('letra-bpm')) document.getElementById('letra-bpm').value = (l.bpm !== undefined && l.bpm !== null) ? l.bpm : '';
-    if (document.getElementById('letra-audio')) document.getElementById('letra-audio').value = l.audioUrl || '';
+    if (document.getElementById('letra-situacao')) document.getElementById('letra-situacao').value = l.situacao || '';
+    if (document.getElementById('letra-drive')) document.getElementById('letra-drive').value = l.driveUrl || '';
     if (document.getElementById('letra-corpo-texto')) document.getElementById('letra-corpo-texto').value = obterTextoLetra(l);
     if (document.getElementById('letra-obs')) document.getElementById('letra-obs').value = l.observacoes || '';
 
@@ -1630,8 +1626,32 @@ window.prepararEdicaoSocial = () => {
 // 7. RENDERIZADORES
 // ==========================================
 
+function handleAgendaError(error) {
+    console.error("Erro sincronizando agenda:", error);
+    const list = document.getElementById('list-agenda');
+    if (list) {
+        list.innerHTML = `
+            <div class="p-8 text-center bg-red-50 rounded-2xl border border-red-100 text-red-700">
+                <p class="font-bold mb-2">Não foi possível carregar a agenda.</p>
+                <p class="text-xs text-red-500 mb-4">Verifique sua conexão ou permissões de acesso.</p>
+                <button onclick="iniciarSincronizacao()" class="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition">Tentar novamente</button>
+            </div>
+        `;
+    }
+}
+
 function renderAgenda(agenda) {
     agendaGlobais = agenda || [];
+    if (agendaGlobais.length === 0) {
+        const list = document.getElementById('list-agenda');
+        if (list) {
+            list.innerHTML = '<p class="p-10 text-center text-slate-400 italic text-sm">A agenda ainda não possui compromissos.</p>';
+        }
+        const countEl = document.getElementById('agenda-filter-count');
+        if (countEl) countEl.innerText = "0 compromisso(s) encontrado(s)";
+        atualizarDashboardAgenda();
+        return;
+    }
     aplicarFiltrosAgenda();
     atualizarDashboardAgenda();
 }
@@ -1650,8 +1670,15 @@ function renderAgendaFiltrada(filtradas) {
         return;
     }
 
-    // Sort: Upcoming (nearest first), Concluded/Cancelled (most recent first)
+    // Ordenar: Próximos (mais próximos primeiro), Concluídos/Cancelados (mais recentes primeiro), inválidos ao final
     const eventosOrdenados = [...filtradas].sort((a,b) => {
+        const dataAValida = agendaValidador.validarData(a.data);
+        const dataBValida = agendaValidador.validarData(b.data);
+
+        if (!dataAValida && dataBValida) return 1;
+        if (dataAValida && !dataBValida) return -1;
+        if (!dataAValida && !dataBValida) return 0;
+
         const dA = a.data + (a.horaInicio ? "T" + a.horaInicio : "T00:00");
         const dB = b.data + (b.horaInicio ? "T" + b.horaInicio : "T00:00");
         
@@ -1667,9 +1694,9 @@ function renderAgendaFiltrada(filtradas) {
         if (!aInativo && bInativo) return -1;
         
         if (!aInativo && !bInativo) {
-            return dA.localeCompare(dB); // nearest future
+            return dA.localeCompare(dB);
         } else {
-            return dB.localeCompare(dA); // most recent past/cancelled
+            return dB.localeCompare(dA);
         }
     });
 
@@ -1681,7 +1708,7 @@ function renderAgendaFiltrada(filtradas) {
         const isHoje = evt.data === hojeISO;
         
         const div = document.createElement('div');
-        let cardClass = "mission-item p-5 bg-white rounded-2xl shadow-sm mb-2 border border-slate-100 transition-all";
+        let cardClass = "mission-item p-5 bg-white rounded-2xl shadow-sm mb-3 border border-slate-100 transition-all";
         if (isCancelled) {
             cardClass += " opacity-60 border-red-100 bg-red-50/30";
         } else if (isPast) {
@@ -1690,14 +1717,13 @@ function renderAgendaFiltrada(filtradas) {
         div.className = cardClass;
         
         const header = document.createElement('div');
-        header.className = "flex justify-between items-start cursor-pointer";
-        header.onclick = () => window.toggleEventoDetalhes(evt.id);
+        header.className = "flex justify-between items-start";
         
         const leftDiv = document.createElement('div');
         leftDiv.className = "flex-1 pr-4";
         
         const tagsDiv = document.createElement('div');
-        tagsDiv.className = "flex items-center gap-2 mb-1 flex-wrap";
+        tagsDiv.className = "flex items-center gap-2 mb-1.5 flex-wrap";
         
         const badgeTag = document.createElement('span');
         let badgeColor = "bg-blue-100 text-blue-700";
@@ -1713,150 +1739,114 @@ function renderAgendaFiltrada(filtradas) {
             badgeText = "Concluído";
             badgeIcon = "fa-check";
         } else if (isHoje) {
-            badgeColor = "bg-green-100 text-green-700";
+            badgeColor = "bg-emerald-100 text-emerald-700";
             badgeText = "Hoje";
             badgeIcon = "fa-clock";
         }
         
-        badgeTag.className = `text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center gap-1 ${badgeColor}`;
+        badgeTag.className = `text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase flex items-center gap-1 ${badgeColor}`;
         badgeTag.innerHTML = `<i class="fas ${badgeIcon}"></i> ${badgeText}`;
         tagsDiv.appendChild(badgeTag);
-        
-        const tipoTag = document.createElement('span');
-        tipoTag.className = "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-slate-100 text-slate-500";
-        tipoTag.textContent = evt.tipo || "Compromisso";
-        tagsDiv.appendChild(tipoTag);
 
+        const dataValida = agendaValidador.validarData(evt.data);
         const dataText = document.createElement('span');
-        dataText.className = "text-xs font-bold text-gold ml-1";
-        dataText.textContent = agendaValidador.formatarDataBR(evt.data);
+        if (dataValida) {
+            dataText.className = "text-xs font-bold text-gold ml-1";
+            dataText.textContent = agendaValidador.formatarDataBR(evt.data);
+        } else {
+            dataText.className = "text-xs font-bold text-red-500 ml-1";
+            dataText.textContent = evt.data ? "Data inválida" : "Data não informada";
+        }
         tagsDiv.appendChild(dataText);
         
         leftDiv.appendChild(tagsDiv);
 
         const title = document.createElement('h4');
         title.className = "font-black text-black text-lg mb-1 leading-tight";
-        title.textContent = evt.desc;
+        title.textContent = evt.desc || "Compromisso sem título";
         if (isCancelled) title.classList.add("line-through", "text-slate-500");
         leftDiv.appendChild(title);
         
-        const sub = document.createElement('p');
-        sub.className = "text-sm text-slate-500 font-medium flex items-center gap-2";
-        const iconLoc = document.createElement('i'); iconLoc.className = "fas fa-location-dot";
-        sub.appendChild(iconLoc);
-        sub.appendChild(document.createTextNode(" " + (evt.local || "Não informado")));
-        if (evt.horaInicio) {
-            const spanTime = document.createElement('span');
-            spanTime.className = "ml-2 text-slate-400";
-            spanTime.innerHTML = `<i class="fas fa-clock"></i> ${evt.horaInicio}${evt.horaFim ? " às " + evt.horaFim : ""}`;
-            sub.appendChild(spanTime);
-        } else {
-            const spanAllDay = document.createElement('span');
-            spanAllDay.className = "ml-2 text-slate-400";
-            spanAllDay.innerHTML = `<i class="fas fa-sun"></i> Dia Inteiro`;
-            sub.appendChild(spanAllDay);
-        }
-        leftDiv.appendChild(sub);
+        const sub = document.createElement('div');
+        sub.className = "text-sm text-slate-500 font-medium flex flex-wrap items-center gap-3 mt-1";
         
+        // Local
+        const locSpan = document.createElement('span');
+        locSpan.className = "flex items-center gap-1 text-slate-600";
+        locSpan.innerHTML = `<i class="fas fa-location-dot text-slate-400"></i>`;
+        const locText = document.createTextNode(` ${evt.local || "Local a combinar"}`);
+        locSpan.appendChild(locText);
+        sub.appendChild(locSpan);
+
+        // Horário
+        const timeSpan = document.createElement('span');
+        timeSpan.className = "flex items-center gap-1 text-slate-500";
+        if (evt.horaInicio) {
+            timeSpan.innerHTML = `<i class="fas fa-clock text-slate-400"></i>`;
+            timeSpan.appendChild(document.createTextNode(` ${evt.horaInicio}${evt.horaFim ? " às " + evt.horaFim : ""}`));
+        } else {
+            timeSpan.innerHTML = `<i class="fas fa-sun text-slate-400"></i>`;
+            timeSpan.appendChild(document.createTextNode(` Dia Inteiro`));
+        }
+        sub.appendChild(timeSpan);
+
+        leftDiv.appendChild(sub);
+
+        // Se houver Maps ou motivo de cancelamento
+        if (isCancelled && evt.cancelReason) {
+            const cancelBox = document.createElement('div');
+            cancelBox.className = "mt-2 p-2.5 bg-red-50 rounded-xl text-red-800 text-xs border border-red-100";
+            cancelBox.innerHTML = `<strong>Cancelamento:</strong> `;
+            cancelBox.appendChild(document.createTextNode(evt.cancelReason));
+            if (evt.cancelledBy) {
+                cancelBox.appendChild(document.createElement('br'));
+                cancelBox.appendChild(document.createTextNode(`Por: ${evt.cancelledBy}`));
+            }
+            leftDiv.appendChild(cancelBox);
+        }
+
         header.appendChild(leftDiv);
 
         // Actions
         const rightDiv = document.createElement('div');
-        rightDiv.className = "flex flex-col gap-2 items-end";
+        rightDiv.className = "flex items-center gap-1.5 shrink-0";
+
+        if (isValidMapsUrl(evt.mapsUrl)) {
+            const mapsLink = document.createElement('a');
+            mapsLink.href = evt.mapsUrl;
+            mapsLink.target = "_blank";
+            mapsLink.rel = "noopener noreferrer";
+            mapsLink.className = "w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex items-center justify-center";
+            mapsLink.title = "Abrir no Google Maps";
+            mapsLink.setAttribute('aria-label', "Abrir no Google Maps");
+            mapsLink.innerHTML = '<i class="fas fa-map-location-dot text-xs"></i>';
+            rightDiv.appendChild(mapsLink);
+        }
         
         if (!isCancelled) {
             const btnEdit = document.createElement('button');
+            btnEdit.type = "button";
             btnEdit.className = "w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-gold hover:bg-gold/10 transition-colors flex items-center justify-center";
             btnEdit.innerHTML = '<i class="fas fa-pen text-xs"></i>';
-            btnEdit.title = "Editar evento";
+            btnEdit.title = "Editar compromisso";
+            btnEdit.setAttribute('aria-label', "Editar compromisso");
             btnEdit.onclick = (e) => { e.stopPropagation(); window.editarAgenda(evt.id); };
             rightDiv.appendChild(btnEdit);
         }
 
         if (!isCancelled && !isPast) {
             const btnCancel = document.createElement('button');
+            btnCancel.type = "button";
             btnCancel.className = "w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center";
             btnCancel.innerHTML = '<i class="fas fa-ban text-xs"></i>';
-            btnCancel.title = "Cancelar evento";
+            btnCancel.title = "Cancelar compromisso";
+            btnCancel.setAttribute('aria-label', "Cancelar compromisso");
             btnCancel.onclick = (e) => { e.stopPropagation(); window.abrirModalAgendaCancelar(evt.id); };
             rightDiv.appendChild(btnCancel);
         }
         
         header.appendChild(rightDiv);
         div.appendChild(header);
-        
-        // Detalhes Expansíveis
-        const detailsDiv = document.createElement('div');
-        detailsDiv.id = `evento-detalhes-${evt.id}`;
-        detailsDiv.className = "hidden mt-4 pt-4 border-t border-slate-100 space-y-3";
-        
-        const addInfoLine = (icon, label, value) => {
-            if (!value) return;
-            const row = document.createElement('div');
-            row.className = "flex gap-3 text-sm";
-            const ic = document.createElement('div');
-            ic.className = "w-5 text-slate-400 text-center";
-            ic.innerHTML = `<i class="${icon}"></i>`;
-            const vl = document.createElement('div');
-            vl.className = "flex-1 text-slate-600";
-            const lbl = document.createElement('strong');
-            lbl.className = "text-slate-800 mr-1";
-            lbl.textContent = label + ":";
-            vl.appendChild(lbl);
-            vl.appendChild(document.createTextNode(value));
-            row.appendChild(ic);
-            row.appendChild(vl);
-            detailsDiv.appendChild(row);
-        };
-
-        if (isCancelled && evt.cancelReason) {
-            const row = document.createElement('div');
-            row.className = "p-3 bg-red-50 rounded-xl text-red-800 text-sm mb-2 border border-red-100";
-            row.innerHTML = `<strong>Motivo do Cancelamento:</strong> `;
-            row.appendChild(document.createTextNode(evt.cancelReason));
-            if (evt.cancelledBy) {
-                row.appendChild(document.createElement('br'));
-                row.appendChild(document.createTextNode(`Por: ${evt.cancelledBy}`));
-            }
-            detailsDiv.appendChild(row);
-        }
-        
-        addInfoLine("fas fa-user", "Responsável", evt.responsavel || "Não informado");
-        addInfoLine("fas fa-users", "Participantes", evt.participantes);
-        addInfoLine("fas fa-map", "Endereço", evt.endereco);
-        addInfoLine("fas fa-align-left", "Observações", evt.observacao);
-
-        if (evt.mapsUrl && isValidMapsUrl(evt.mapsUrl)) {
-            const row = document.createElement('div');
-            row.className = "flex gap-3 text-sm mt-2";
-            const ic = document.createElement('div');
-            ic.className = "w-5 text-slate-400 text-center";
-            ic.innerHTML = '<i class="fas fa-map-marked-alt text-blue-500"></i>';
-            const vl = document.createElement('div');
-            const aLink = document.createElement('a');
-            aLink.href = evt.mapsUrl;
-            aLink.target = "_blank";
-            aLink.rel = "noopener noreferrer";
-            aLink.className = "text-blue-500 font-bold hover:underline";
-            aLink.textContent = "Abrir no Google Maps";
-            vl.appendChild(aLink);
-            row.appendChild(ic);
-            row.appendChild(vl);
-            detailsDiv.appendChild(row);
-        }
-
-        if (!isCancelled) {
-            const actionRow = document.createElement('div');
-            actionRow.className = "flex justify-end mt-4";
-            const btnIcs = document.createElement('button');
-            btnIcs.className = "text-xs font-bold px-4 py-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center gap-2";
-            btnIcs.innerHTML = '<i class="far fa-calendar-plus"></i> Adicionar ao Calendário';
-            btnIcs.onclick = () => window.exportarEventoICS(evt.id);
-            actionRow.appendChild(btnIcs);
-            detailsDiv.appendChild(actionRow);
-        }
-
-        div.appendChild(detailsDiv);
         list.appendChild(div);
     });
 }
@@ -2430,16 +2420,16 @@ function atualizarDashboardLetras() {
 
 window.limparFiltrosLetras = () => {
     if (document.getElementById('filtro-letras-busca')) document.getElementById('filtro-letras-busca').value = '';
+    if (document.getElementById('filtro-letras-situacao')) document.getElementById('filtro-letras-situacao').value = '';
     if (document.getElementById('filtro-letras-tom')) document.getElementById('filtro-letras-tom').value = '';
-    if (document.getElementById('filtro-letras-categoria')) document.getElementById('filtro-letras-categoria').value = '';
     if (document.getElementById('filtro-letras-status')) document.getElementById('filtro-letras-status').value = 'ativas';
     aplicarFiltrosLetras();
 };
 
 window.aplicarFiltrosLetras = () => {
-    const busca = normalizar((document.getElementById('filtro-letras-busca')?.value || '').trim());
+    const busca = normalizar(document.getElementById('filtro-letras-busca')?.value || '');
+    const situacao = (document.getElementById('filtro-letras-situacao')?.value || '').trim();
     const tom = (document.getElementById('filtro-letras-tom')?.value || '').trim();
-    const categoria = (document.getElementById('filtro-letras-categoria')?.value || '').trim();
     const status = document.getElementById('filtro-letras-status')?.value || 'ativas';
 
     const filtradas = letrasGlobais.filter(l => {
@@ -2453,13 +2443,19 @@ window.aplicarFiltrosLetras = () => {
             if (lStatus !== 'archived') return false;
         }
 
+        if (situacao) {
+            if (situacao === 'sem_situacao') {
+                if (l.situacao) return false;
+            } else if (l.situacao !== situacao) {
+                return false;
+            }
+        }
+
         if (tom && (l.tom || '').trim() !== tom) return false;
-        if (categoria && (l.categoria || '') !== categoria) return false;
 
         if (busca) {
             const tituloNorm = normalizar(l.titulo || '');
-            const interpreteNorm = normalizar(l.interprete || '');
-            if (!tituloNorm.includes(busca) && !interpreteNorm.includes(busca)) {
+            if (!tituloNorm.includes(busca)) {
                 return false;
             }
         }
@@ -2539,32 +2535,21 @@ function renderLetrasFiltradas(letrasFiltradas) {
         }
         contentBox.appendChild(headerBox);
 
-        if (l.interprete && typeof l.interprete === 'string' && l.interprete.trim()) {
-            const interpreteP = document.createElement('p');
-            interpreteP.className = "text-xs text-slate-500 font-medium mb-3";
-            interpreteP.textContent = `Por: ${l.interprete.trim()}`;
-            contentBox.appendChild(interpreteP);
-        }
-
         const tagsBox = document.createElement('div');
         tagsBox.className = "flex flex-wrap gap-2 items-center mt-2";
 
+        // Situação Badge
+        const sitInfo = obterInfoSituacao(l.situacao);
+        const sitBadge = document.createElement('span');
+        sitBadge.className = `text-[11px] font-bold px-2.5 py-1 rounded-md ${sitInfo.badgeClass}`;
+        sitBadge.textContent = sitInfo.label;
+        tagsBox.appendChild(sitBadge);
+
+        // Tom Badge
         const tomBadge = document.createElement('span');
         tomBadge.className = "tom-badge";
         tomBadge.textContent = l.tom ? l.tom : 'Tom não informado';
         tagsBox.appendChild(tomBadge);
-
-        const catBadge = document.createElement('span');
-        catBadge.className = "text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md";
-        catBadge.textContent = l.categoria || 'Sem categoria';
-        tagsBox.appendChild(catBadge);
-
-        if (l.bpm) {
-            const bpmBadge = document.createElement('span');
-            bpmBadge.className = "text-[11px] font-bold text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md";
-            bpmBadge.textContent = `${l.bpm} BPM`;
-            tagsBox.appendChild(bpmBadge);
-        }
 
         contentBox.appendChild(tagsBox);
         card.appendChild(contentBox);
@@ -2583,18 +2568,18 @@ function renderLetrasFiltradas(letrasFiltradas) {
         const rightBtns = document.createElement('div');
         rightBtns.className = "flex items-center gap-1";
 
-        const valAudio = validarAudioUrl(l.audioUrl);
-        if (valAudio.valido && valAudio.url) {
-            const audioLink = document.createElement('a');
-            audioLink.href = valAudio.url;
-            audioLink.target = "_blank";
-            audioLink.rel = "noopener noreferrer";
-            audioLink.className = "p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors";
-            audioLink.setAttribute('aria-label', `Ouvir áudio de ${l.titulo || 'música'}`);
-            audioLink.title = "Ouvir áudio";
-            audioLink.innerHTML = `<i class="fas fa-play text-xs"></i>`;
-            audioLink.addEventListener('click', (e) => e.stopPropagation());
-            rightBtns.appendChild(audioLink);
+        const valDrive = validarDriveUrl(l.driveUrl);
+        if (valDrive.valido && valDrive.url) {
+            const driveLink = document.createElement('a');
+            driveLink.href = valDrive.url;
+            driveLink.target = "_blank";
+            driveLink.rel = "noopener noreferrer";
+            driveLink.className = "p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors";
+            driveLink.setAttribute('aria-label', `Abrir Drive de ${l.titulo || 'música'}`);
+            driveLink.title = "Abrir Google Drive";
+            driveLink.innerHTML = `<i class="fab fa-google-drive text-sm"></i>`;
+            driveLink.addEventListener('click', (e) => e.stopPropagation());
+            rightBtns.appendChild(driveLink);
         }
 
         if (!isArchived) {
@@ -2679,36 +2664,21 @@ window.abrirModoApresentacao = (l, e) => {
 
     const modalTitulo = document.getElementById('modal-titulo');
     const modalTom = document.getElementById('modal-tom');
-    const modalCategoria = document.getElementById('modal-categoria');
-    const modalInterprete = document.getElementById('modal-interprete');
-    const modalBpm = document.getElementById('modal-bpm');
+    const modalSituacao = document.getElementById('modal-situacao');
     const modalPinnedBadge = document.getElementById('modal-pinned-badge');
     const modalArchivedBadge = document.getElementById('modal-archived-badge');
     const modalCorpo = document.getElementById('modal-corpo');
     const modalObsContainer = document.getElementById('modal-obs-container');
     const modalObs = document.getElementById('modal-obs');
-    const modalAudioBtn = document.getElementById('modal-audio-btn');
+    const modalDriveBtn = document.getElementById('modal-drive-btn');
 
     if (modalTitulo) modalTitulo.textContent = l.titulo || 'Música sem título';
     if (modalTom) modalTom.textContent = l.tom ? `Tom: ${l.tom}` : 'Tom não informado';
-    if (modalCategoria) modalCategoria.textContent = l.categoria || 'Sem categoria';
 
-    if (modalInterprete) {
-        if (l.interprete && typeof l.interprete === 'string' && l.interprete.trim()) {
-            modalInterprete.textContent = `Por: ${l.interprete.trim()}`;
-            modalInterprete.classList.remove('hidden');
-        } else {
-            modalInterprete.classList.add('hidden');
-        }
-    }
-
-    if (modalBpm) {
-        if (l.bpm) {
-            modalBpm.textContent = `${l.bpm} BPM`;
-            modalBpm.classList.remove('hidden');
-        } else {
-            modalBpm.classList.add('hidden');
-        }
+    if (modalSituacao) {
+        const sitInfo = obterInfoSituacao(l.situacao);
+        modalSituacao.textContent = sitInfo.label;
+        modalSituacao.className = `text-xs font-bold px-2.5 py-1 rounded-md ${sitInfo.badgeClass}`;
     }
 
     const isArchived = l.status === 'archived';
@@ -2737,14 +2707,14 @@ window.abrirModoApresentacao = (l, e) => {
         }
     }
 
-    if (modalAudioBtn) {
-        const valAudio = validarAudioUrl(l.audioUrl);
-        if (valAudio.valido && valAudio.url) {
-            modalAudioBtn.href = valAudio.url;
-            modalAudioBtn.classList.remove('hidden');
+    if (modalDriveBtn) {
+        const valDrive = validarDriveUrl(l.driveUrl);
+        if (valDrive.valido && valDrive.url) {
+            modalDriveBtn.href = valDrive.url;
+            modalDriveBtn.classList.remove('hidden');
         } else {
-            modalAudioBtn.href = '#';
-            modalAudioBtn.classList.add('hidden');
+            modalDriveBtn.href = '#';
+            modalDriveBtn.classList.add('hidden');
         }
     }
 
@@ -2968,39 +2938,27 @@ window.aplicarFiltrosAgenda = () => {
     if (!agendaGlobais || agendaGlobais.length === 0) {
         renderAgendaFiltrada([]);
         const countEl = document.getElementById('agenda-filter-count');
-        if (countEl) countEl.innerText = "0 evento(s) encontrado(s)";
+        if (countEl) countEl.innerText = "0 compromisso(s) encontrado(s)";
         return;
     }
 
-    const busca = document.getElementById('filtro-agenda-busca').value.trim().toLowerCase();
-    const dataInicio = document.getElementById('filtro-agenda-data-inicio').value;
-    const dataFim = document.getElementById('filtro-agenda-data-fim').value;
-    const tipo = document.getElementById('filtro-agenda-tipo').value;
-    const responsavel = document.getElementById('filtro-agenda-responsavel').value.trim().toLowerCase();
-    const status = document.getElementById('filtro-agenda-status').value;
+    const busca = normalizar(document.getElementById('filtro-agenda-busca')?.value || '');
+    const dataInicio = document.getElementById('filtro-agenda-data-inicio')?.value || '';
+    const dataFim = document.getElementById('filtro-agenda-data-fim')?.value || '';
+    const statusEl = document.getElementById('filtro-agenda-status');
+    const status = statusEl ? statusEl.value : '';
 
-    const normalizar = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
     const hojeISO = getHojeLocalISO();
 
     const filtradas = agendaGlobais.filter(a => {
         if (!a) return false;
         if (dataInicio && a.data < dataInicio) return false;
         if (dataFim && a.data > dataFim) return false;
-        
-        const aTipo = a.tipo || "Compromisso";
-        if (tipo && aTipo !== tipo) return false;
-        
-        const aResp = a.responsavel || "Não informado";
-        if (responsavel) {
-            const respNormal = normalizar(aResp.toLowerCase());
-            if (!respNormal.includes(normalizar(responsavel))) return false;
-        }
 
         if (busca) {
-            const descNormal = normalizar((a.desc || '').toLowerCase());
-            const localNormal = normalizar((a.local || '').toLowerCase());
-            const b = normalizar(busca);
-            if (!descNormal.includes(b) && !localNormal.includes(b)) return false;
+            const descNormal = normalizar(a.desc || '');
+            const localNormal = normalizar(a.local || '');
+            if (!descNormal.includes(busca) && !localNormal.includes(busca)) return false;
         }
 
         const evtPassou = agendaValidador.eventoPassou(a);
@@ -3010,6 +2968,8 @@ window.aplicarFiltrosAgenda = () => {
         if (status) {
             if (status === 'cancelados') {
                 if (aStatus !== 'cancelled') return false;
+            } else if (status === 'todos') {
+                // Manter todos os registros
             } else {
                 if (aStatus === 'cancelled') return false;
                 if (status === 'concluidos') {
@@ -3020,6 +2980,8 @@ window.aplicarFiltrosAgenda = () => {
                     if (!isHoje) return false;
                 }
             }
+        } else {
+            if (aStatus === 'cancelled') return false;
         }
 
         return true;
@@ -3027,99 +2989,76 @@ window.aplicarFiltrosAgenda = () => {
     
     const countEl = document.getElementById('agenda-filter-count');
     if (countEl) {
-        countEl.innerText = filtradas.length > 0 ? `${filtradas.length} evento(s) encontrado(s)` : 'Nenhum evento encontrado.';
+        countEl.innerText = filtradas.length > 0 ? `${filtradas.length} compromisso(s) encontrado(s)` : 'Nenhum compromisso encontrado.';
     }
 
     renderAgendaFiltrada(filtradas);
 };
 
 window.limparFiltrosAgenda = () => {
-    document.getElementById('filtro-agenda-busca').value = "";
-    document.getElementById('filtro-agenda-data-inicio').value = "";
-    document.getElementById('filtro-agenda-data-fim').value = "";
-    document.getElementById('filtro-agenda-tipo').value = "";
-    document.getElementById('filtro-agenda-responsavel').value = "";
-    document.getElementById('filtro-agenda-status').value = "";
+    if (document.getElementById('filtro-agenda-busca')) document.getElementById('filtro-agenda-busca').value = "";
+    if (document.getElementById('filtro-agenda-data-inicio')) document.getElementById('filtro-agenda-data-inicio').value = "";
+    if (document.getElementById('filtro-agenda-data-fim')) document.getElementById('filtro-agenda-data-fim').value = "";
+    if (document.getElementById('filtro-agenda-status')) document.getElementById('filtro-agenda-status').value = "";
     aplicarFiltrosAgenda();
 };
 
 window.addAgenda = async () => {
     const descEl = document.getElementById('agenda-desc');
-    const tipoEl = document.getElementById('agenda-tipo');
     const dataEl = document.getElementById('agenda-data');
     const horaInicioEl = document.getElementById('agenda-hora-inicio');
-    const horaFimEl = document.getElementById('agenda-hora-fim');
     const localEl = document.getElementById('agenda-local');
-    const enderecoEl = document.getElementById('agenda-endereco');
     const mapsEl = document.getElementById('agenda-maps');
-    const responsavelEl = document.getElementById('agenda-responsavel');
-    const participantesEl = document.getElementById('agenda-participantes');
-    const obsEl = document.getElementById('agenda-obs');
     
     const errorEl = document.getElementById('agenda-error');
     const successEl = document.getElementById('agenda-success');
     const btn = document.getElementById('btn-add-agenda');
 
-    errorEl.classList.add('hidden');
-    successEl.classList.add('hidden');
+    if (errorEl) errorEl.classList.add('hidden');
+    if (successEl) successEl.classList.add('hidden');
 
-    const desc = descEl.value.trim();
-    const tipo = tipoEl.value;
-    const data = dataEl.value;
-    const horaInicio = horaInicioEl.value;
-    const horaFim = horaFimEl.value;
-    const local = localEl.value.trim();
-    const endereco = enderecoEl.value.trim();
-    const mapsUrl = mapsEl.value.trim();
-    const responsavel = responsavelEl.value.trim();
-    const participantes = participantesEl.value.trim();
-    const observacao = obsEl.value.trim();
+    const desc = (descEl?.value || '').trim();
+    const data = (dataEl?.value || '').trim();
+    const horaInicio = (horaInicioEl?.value || '').trim();
+    const local = (localEl?.value || '').trim();
+    const mapsUrl = (mapsEl?.value || '').trim();
 
-    if (!desc || !tipo || !data || !local || !responsavel) {
-        errorEl.innerText = "Preencha título, tipo, data, local e responsável.";
-        errorEl.classList.remove('hidden');
-        return;
-    }
-    
-    // Para novos eventos sem edição, horário inicial pode ser informado; se não informado na edição de legado, é mantido como dia inteiro
-    if (!eventoAtualEdicao && !horaInicio) {
-        errorEl.innerText = "O horário de início é obrigatório para novos compromissos.";
-        errorEl.classList.remove('hidden');
+    if (!desc || !data) {
+        if (errorEl) {
+            errorEl.innerText = "Preencha o compromisso/evento e a data.";
+            errorEl.classList.remove('hidden');
+        }
         return;
     }
 
     if (!agendaValidador.validarData(data)) {
-        errorEl.innerText = "Data inválida.";
-        errorEl.classList.remove('hidden');
+        if (errorEl) {
+            errorEl.innerText = "Data inválida.";
+            errorEl.classList.remove('hidden');
+        }
         return;
     }
     
     if (horaInicio && !agendaValidador.validarHora(horaInicio)) {
-        errorEl.innerText = "Horário inicial inválido.";
-        errorEl.classList.remove('hidden');
-        return;
-    }
-    
-    if (horaFim && !agendaValidador.validarHora(horaFim)) {
-        errorEl.innerText = "Horário de término inválido.";
-        errorEl.classList.remove('hidden');
-        return;
-    }
-
-    if (horaInicio && horaFim && horaFim < horaInicio) {
-        errorEl.innerText = "O horário de término não pode ser anterior ao início.";
-        errorEl.classList.remove('hidden');
+        if (errorEl) {
+            errorEl.innerText = "Horário inválido (use o formato HH:MM).";
+            errorEl.classList.remove('hidden');
+        }
         return;
     }
 
     if (mapsUrl && !isValidMapsUrl(mapsUrl)) {
-        errorEl.innerText = "Link do Google Maps inválido ou não seguro.";
-        errorEl.classList.remove('hidden');
+        if (errorEl) {
+            errorEl.innerText = "Link do Google Maps inválido ou não seguro (deve iniciar com https://).";
+            errorEl.classList.remove('hidden');
+        }
         return;
     }
 
-    btn.disabled = true;
-    btn.innerText = "Salvando...";
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Salvando...";
+    }
 
     try {
         if (eventoAtualEdicao) {
@@ -3139,77 +3078,72 @@ window.addAgenda = async () => {
                 
                 transaction.update(docRef, {
                     desc,
-                    tipo,
                     data,
                     horaInicio: horaInicio || "",
-                    horaFim: horaFim || "",
-                    local,
-                    endereco,
-                    mapsUrl,
-                    responsavel,
-                    participantes,
-                    observacao,
+                    local: local || "",
+                    mapsUrl: mapsUrl || "",
                     updatedAt: serverTimestamp()
                 });
             });
 
             cancelarEdicaoAgenda();
-            successEl.innerText = "Alterações salvas com sucesso!";
-            successEl.classList.remove('hidden');
-            setTimeout(() => successEl.classList.add('hidden'), 3000);
+            if (successEl) {
+                successEl.innerText = "Compromisso atualizado com sucesso!";
+                successEl.classList.remove('hidden');
+                setTimeout(() => successEl.classList.add('hidden'), 3000);
+            }
         } else {
             const payload = {
                 desc,
-                tipo,
                 data,
                 horaInicio: horaInicio || "",
-                horaFim: horaFim || "",
-                local,
-                endereco,
-                mapsUrl,
-                responsavel,
-                participantes,
-                observacao,
+                local: local || "",
+                mapsUrl: mapsUrl || "",
                 status: "active",
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
             await addDoc(collection(db, "agenda"), payload);
             
-            descEl.value = "";
-            tipoEl.value = "";
-            horaInicioEl.value = "";
-            horaFimEl.value = "";
-            localEl.value = "";
-            enderecoEl.value = "";
-            mapsEl.value = "";
-            responsavelEl.value = "";
-            participantesEl.value = "";
-            obsEl.value = "";
-            
-            successEl.innerText = "Lançamento salvo com sucesso!";
-            successEl.classList.remove('hidden');
-            setTimeout(() => successEl.classList.add('hidden'), 3000);
+            limparFormularioAgenda();
+            if (successEl) {
+                successEl.innerText = "Compromisso agendado com sucesso!";
+                successEl.classList.remove('hidden');
+                setTimeout(() => successEl.classList.add('hidden'), 3000);
+            }
         }
     } catch (e) {
         console.error("Erro ao salvar agenda:", e);
-        if (e.message === "EVENT_CANCELLED") {
-            errorEl.innerText = "Este compromisso foi cancelado por outro usuário e não pode mais ser editado.";
-            cancelarEdicaoAgenda();
-        } else if (e.message === "EVENT_NOT_FOUND") {
-            errorEl.innerText = "Este compromisso não foi encontrado no banco de dados.";
-            cancelarEdicaoAgenda();
-        } else {
-            errorEl.innerText = "Erro ao salvar. Tente novamente.";
+        if (errorEl) {
+            if (e.message === "EVENT_CANCELLED") {
+                errorEl.innerText = "Este compromisso foi cancelado por outro usuário e não pode mais ser editado.";
+                cancelarEdicaoAgenda();
+            } else if (e.message === "EVENT_NOT_FOUND") {
+                errorEl.innerText = "Este compromisso não foi encontrado no banco de dados.";
+                cancelarEdicaoAgenda();
+            } else {
+                errorEl.innerText = "Erro ao salvar. Tente novamente.";
+            }
+            errorEl.classList.remove('hidden');
         }
-        errorEl.classList.remove('hidden');
     } finally {
-        if (!eventoAtualEdicao) {
-            btn.innerText = "Confirmar Evento";
+        if (btn) {
+            if (!eventoAtualEdicao) {
+                btn.innerText = "Confirmar Evento";
+            }
+            btn.disabled = false;
         }
-        btn.disabled = false;
     }
 };
+
+function limparFormularioAgenda() {
+    if (document.getElementById('agenda-desc')) document.getElementById('agenda-desc').value = "";
+    if (document.getElementById('agenda-data')) document.getElementById('agenda-data').value = "";
+    if (document.getElementById('agenda-hora-inicio')) document.getElementById('agenda-hora-inicio').value = "";
+    if (document.getElementById('agenda-local')) document.getElementById('agenda-local').value = "";
+    if (document.getElementById('agenda-maps')) document.getElementById('agenda-maps').value = "";
+    if (document.getElementById('agenda-error')) document.getElementById('agenda-error').classList.add('hidden');
+}
 
 window.editarAgenda = (id) => {
     const evento = agendaGlobais.find(a => a.id === id);
@@ -3221,43 +3155,37 @@ window.editarAgenda = (id) => {
     }
 
     eventoAtualEdicao = id;
-    document.getElementById('agenda-form-title').innerText = "Editando Compromisso";
-    document.getElementById('btn-agenda-cancel').classList.remove('hidden');
-    document.getElementById('btn-add-agenda').innerText = "Salvar Alterações";
+    const titleEl = document.getElementById('agenda-form-title');
+    if (titleEl) titleEl.innerText = "Editando Compromisso";
     
-    document.getElementById('agenda-desc').value = evento.desc || '';
-    document.getElementById('agenda-tipo').value = evento.tipo || 'Compromisso';
-    document.getElementById('agenda-data').value = evento.data || '';
-    document.getElementById('agenda-hora-inicio').value = evento.horaInicio || '';
-    document.getElementById('agenda-hora-fim').value = evento.horaFim || '';
-    document.getElementById('agenda-local').value = evento.local || '';
-    document.getElementById('agenda-endereco').value = evento.endereco || '';
-    document.getElementById('agenda-maps').value = evento.mapsUrl || '';
-    document.getElementById('agenda-responsavel').value = evento.responsavel || 'Não informado';
-    document.getElementById('agenda-participantes').value = evento.participantes || '';
-    document.getElementById('agenda-obs').value = evento.observacao || '';
+    const cancelBtn = document.getElementById('btn-agenda-cancel');
+    if (cancelBtn) cancelBtn.classList.remove('hidden');
     
-    document.getElementById('agenda-form-container').scrollIntoView({ behavior: 'smooth' });
+    const addBtn = document.getElementById('btn-add-agenda');
+    if (addBtn) addBtn.innerText = "Salvar Alterações";
+    
+    if (document.getElementById('agenda-desc')) document.getElementById('agenda-desc').value = evento.desc || '';
+    if (document.getElementById('agenda-data')) document.getElementById('agenda-data').value = evento.data || '';
+    if (document.getElementById('agenda-hora-inicio')) document.getElementById('agenda-hora-inicio').value = evento.horaInicio || '';
+    if (document.getElementById('agenda-local')) document.getElementById('agenda-local').value = evento.local || '';
+    if (document.getElementById('agenda-maps')) document.getElementById('agenda-maps').value = evento.mapsUrl || '';
+    
+    const container = document.getElementById('agenda-form-container');
+    if (container) container.scrollIntoView({ behavior: 'smooth' });
 };
 
 window.cancelarEdicaoAgenda = () => {
     eventoAtualEdicao = null;
-    document.getElementById('agenda-form-title').innerText = "Agendar Novo Compromisso";
-    document.getElementById('btn-agenda-cancel').classList.add('hidden');
-    document.getElementById('btn-add-agenda').innerText = "Confirmar Evento";
+    const titleEl = document.getElementById('agenda-form-title');
+    if (titleEl) titleEl.innerText = "Agendar Novo Compromisso";
     
-    document.getElementById('agenda-desc').value = "";
-    document.getElementById('agenda-tipo').value = "";
-    document.getElementById('agenda-data').value = "";
-    document.getElementById('agenda-hora-inicio').value = "";
-    document.getElementById('agenda-hora-fim').value = "";
-    document.getElementById('agenda-local').value = "";
-    document.getElementById('agenda-endereco').value = "";
-    document.getElementById('agenda-maps').value = "";
-    document.getElementById('agenda-responsavel').value = "";
-    document.getElementById('agenda-participantes').value = "";
-    document.getElementById('agenda-obs').value = "";
-    document.getElementById('agenda-error').classList.add('hidden');
+    const cancelBtn = document.getElementById('btn-agenda-cancel');
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+    
+    const addBtn = document.getElementById('btn-add-agenda');
+    if (addBtn) addBtn.innerText = "Confirmar Evento";
+    
+    limparFormularioAgenda();
 };
 
 window.abrirModalAgendaCancelar = (id) => {
