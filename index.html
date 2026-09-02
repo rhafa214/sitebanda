@@ -14,23 +14,29 @@
 
     <!-- O APP INICIA ESCONDIDO NO CSS, NÃO NO HTML -->
     <div id="app-shell" class="app-shell">
-        <aside class="sidebar">
+        <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
                 <div class="brand-container-vertical">
-                    <div class="brand-logo-box mx-auto">
-                        <img src="logo-leao.png" alt="MS" onerror="this.style.display='none'; document.getElementById('fallback-icon').style.display='block';">
-                        <i class="fas fa-flame text-[#D4AF37] text-xl hidden" id="fallback-icon"></i>
+                    <div id="brand-logo-container" class="brand-logo-box mx-auto" style="display: none;">
+                        <img
+                            id="mission-logo"
+                            src="/logo-leao.png"
+                            alt="Logo da Missão Sedentos"
+                        >
                     </div>
                     <div class="brand-text-center mt-4 text-center">
                         <span class="brand-name text-white">Sedentos<span class="text-[#D4AF37]">.</span></span>
                         <span class="brand-tagline">Por Jesus nós somos?! SEDENTOS!</span>
                     </div>
                 </div>
+                <button class="mobile-close-btn md:hidden absolute top-4 right-4 text-slate-400 hover:text-white p-2" onclick="toggleMobileMenu()" aria-label="Fechar menu">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
 
             <nav class="sidebar-nav">
                 <p class="nav-section-title">Menu</p>
-                <button onclick="router('dashboard')" class="nav-link active" id="nav-dashboard"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></button>
+                <button onclick="router('dashboard')" class="nav-link" id="nav-dashboard"><i class="fas fa-chart-pie"></i> <span>Dashboard</span></button>
                 <button onclick="router('agenda')" class="nav-link" id="nav-agenda"><i class="fas fa-calendar-alt"></i> <span>Agenda</span></button>
                 <button onclick="router('letras')" class="nav-link" id="nav-letras"><i class="fas fa-guitar"></i> <span>Repertório</span></button>
                 <p class="nav-section-title">Administração</p>
@@ -43,11 +49,16 @@
             </div>
         </aside>
 
+        <!-- Mobile Backdrop -->
+        <div id="sidebar-backdrop" class="sidebar-backdrop md:hidden" onclick="toggleMobileMenu()"></div>
+
         <main class="main-content">
             <header class="main-header">
-                <div class="header-breadcrumb flex items-center">
-                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
-                    <span id="breadcrumb" class="current-page text-gold">DASHBOARD</span>
+                <div class="header-breadcrumb flex items-center gap-3">
+                    <button class="mobile-menu-btn md:hidden" onclick="toggleMobileMenu()" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span id="breadcrumb" class="current-page text-gold font-bold tracking-wider text-sm md:text-base">DASHBOARD</span>
                 </div>
             </header>
 
@@ -144,14 +155,13 @@
 
                         <div class="bento-card col-span-full">
                             <p class="card-label mb-4">PLATAFORMAS DIGITAIS & LINKS DA MISSÃO</p>
-                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                 <a href="https://mail.google.com/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-envelope text-red-500"></i><span>Gmail</span></a>
                                 <a href="https://dashboard.offstep.com/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-play text-emerald-500"></i><span>Offstep</span></a>
                                 <a href="https://artists.spotify.com/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-spotify text-green-500"></i><span>Spotify</span></a>
                                 <a href="https://www.instagram.com/missaosedentos/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-instagram text-pink-500"></i><span>Instagram</span></a>
-                                <a href="https://missaosedentos.com.br" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-globe text-blue-500"></i><span>Site Oficial</span></a>
-                                <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-music text-purple-500"></i><span>Acervo Musical</span></a>
-                                <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-google-drive text-amber-500"></i><span>Drive Missão</span></a>
+                                <a href="https://missaosedentos.vercel.app/" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fas fa-globe text-blue-500"></i><span>Site Oficial</span></a>
+                                <a href="https://drive.google.com/drive/folders/1IAcKZvR59kJghaLwc0ALrwLdQNkEfTZc?usp=drive_link" target="_blank" rel="noopener noreferrer" class="shortcut-btn dashboard-clickable"><i class="fab fa-google-drive text-amber-500"></i><span>Drive Missão</span></a>
                             </div>
                         </div>
 
@@ -204,47 +214,66 @@
                 <!-- VIEW: AGENDA -->
                 <section id="agenda-view" class="view hidden">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm gap-4">
-                        <h1 class="text-2xl font-black text-black">Agenda Missão</h1>
-                        <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium">
-                            <i class="fab fa-whatsapp mr-2"></i> Compartilhar
-                        </button>
+                        <div>
+                            <h1 class="text-2xl font-black text-black">Agenda Missão</h1>
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Compromissos e Eventos</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button onclick="shareAgendaWhatsApp()" class="btn-whatsapp-premium">
+                                <i class="fab fa-whatsapp mr-2"></i> Compartilhar
+                            </button>
+                            <button id="btn-toggle-agenda-form" type="button" onclick="toggleAgendaForm()" class="btn-gold-full px-5 py-2.5 flex items-center gap-2 text-xs font-bold" aria-expanded="false" aria-controls="agenda-form-container">
+                                <i class="fas fa-plus"></i> <span>Novo compromisso</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Filter Section -->
-                    <div class="glass-form p-6 mb-8">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter mr-1"></i> Filtros da Agenda</h3>
+                    <div class="glass-form p-4 md:p-6 mb-8" id="agenda-filters-container">
+                        <div class="flex justify-between items-center mb-2 md:mb-4">
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter mr-1"></i> Filtros da Agenda</h3>
+                                <button id="btn-toggle-agenda-filters" type="button" onclick="toggleAgendaFilters()" class="md:hidden text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl transition-colors flex items-center gap-1.5" aria-expanded="false" aria-controls="agenda-filters-panel">
+                                    <i class="fas fa-filter"></i> <span>Filtrar</span>
+                                </button>
+                            </div>
                             <button onclick="limparFiltrosAgenda()" class="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors">Limpar Filtros</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <label for="filtro-agenda-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca</label>
-                                <input type="text" id="filtro-agenda-busca" placeholder="Buscar título ou local..." class="w-full" oninput="aplicarFiltrosAgenda()">
-                            </div>
-                            <div>
-                                <label for="filtro-agenda-data-inicio" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data Início</label>
-                                <input type="date" id="filtro-agenda-data-inicio" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
-                            </div>
-                            <div>
-                                <label for="filtro-agenda-data-fim" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data Fim</label>
-                                <input type="date" id="filtro-agenda-data-fim" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
-                            </div>
-                            <div>
-                                <label for="filtro-agenda-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
-                                <select id="filtro-agenda-status" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
-                                    <option value="">Todos (Ativos)</option>
-                                    <option value="proximos">Próximos</option>
-                                    <option value="hoje">Hoje</option>
-                                    <option value="concluidos">Concluídos</option>
-                                    <option value="cancelados">Cancelados</option>
-                                    <option value="todos">Todos os Eventos</option>
-                                </select>
+                        <div id="agenda-filters-panel" class="hidden md:block">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                                <div>
+                                    <label for="filtro-agenda-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca</label>
+                                    <input type="text" id="filtro-agenda-busca" placeholder="Buscar título ou local..." class="w-full" oninput="aplicarFiltrosAgenda()">
+                                </div>
+                                <div>
+                                    <label for="filtro-agenda-data-inicio" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data Início</label>
+                                    <input type="date" id="filtro-agenda-data-inicio" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
+                                </div>
+                                <div>
+                                    <label for="filtro-agenda-data-fim" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data Fim</label>
+                                    <input type="date" id="filtro-agenda-data-fim" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
+                                </div>
+                                <div>
+                                    <label for="filtro-agenda-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status</label>
+                                    <select id="filtro-agenda-status" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white" onchange="aplicarFiltrosAgenda()">
+                                        <option value="">Todos (Ativos)</option>
+                                        <option value="proximos">Próximos</option>
+                                        <option value="hoje">Hoje</option>
+                                        <option value="concluidos">Concluídos</option>
+                                        <option value="cancelados">Cancelados</option>
+                                        <option value="todos">Todos os Eventos</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4 text-sm text-slate-500 font-medium" id="agenda-filter-count"></div>
                     </div>
 
-                    <div class="glass-form p-8 mb-10" id="agenda-form-container">
+                    <!-- Lista de Compromissos (Exibida em Primeiro) -->
+                    <div id="list-agenda" class="mt-2 mb-8 flex flex-col gap-3"></div>
+
+                    <!-- Formulário Recolhível (Inicia Fechado) -->
+                    <div class="glass-form p-8 mb-10 hidden" id="agenda-form-container" style="display: none;">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest" id="agenda-form-title">Agendar Novo Compromisso</h3>
                             <button onclick="cancelarEdicaoAgenda()" id="btn-agenda-cancel" class="hidden text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Cancelar Edição</button>
@@ -276,8 +305,6 @@
                         
                         <button onclick="addAgenda()" id="btn-add-agenda" class="btn-gold-full mt-6 w-full">Confirmar Compromisso</button>
                     </div>
-                    
-                    <div id="list-agenda" class="mt-8 flex flex-col gap-3"></div>
                 </section>
 
                 <!-- VIEW: REPERTÓRIO -->
@@ -287,51 +314,63 @@
                             <h1 class="text-2xl font-black text-black">Repertório Musical</h1>
                             <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Cifras, Letras e Tons da Missão</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-3">
                             <span id="letras-header-stats" class="text-xs font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-xl">0 músicas ativas</span>
+                            <button id="btn-toggle-letras-form" type="button" onclick="toggleLetrasForm()" class="btn-gold-full px-5 py-2.5 flex items-center gap-2 text-xs font-bold" aria-expanded="false" aria-controls="form-letras-container">
+                                <i class="fas fa-music"></i> <span>Nova música</span>
+                            </button>
                         </div>
                     </div>
 
                     <!-- Filtros do Repertório -->
-                    <div class="glass-form p-6 mb-8" id="filtro-letras-container">
+                    <div class="glass-form p-4 md:p-6 mb-8" id="filtro-letras-container">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest"><i class="fas fa-filter mr-1"></i> Filtros do Repertório</h3>
                             <button onclick="limparFiltrosLetras()" class="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors">Limpar Filtros</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                             <div>
                                 <label for="filtro-letras-busca" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Busca por Nome</label>
                                 <input type="text" id="filtro-letras-busca" placeholder="Nome da música..." class="w-full" oninput="aplicarFiltrosLetras()">
                             </div>
                             
-                            <div>
-                                <label for="filtro-letras-situacao" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Situação</label>
-                                <select id="filtro-letras-situacao" class="w-full" onchange="aplicarFiltrosLetras()">
-                                    <option value="">Todas as Situações</option>
-                                    <option value="idea">💡 Ideia</option>
-                                    <option value="in_progress">✍️ Em composição</option>
-                                    <option value="unfinished">⏳ Falta terminar</option>
-                                    <option value="finished">✅ Finalizada</option>
-                                    <option value="recorded">🎙️ Gravada</option>
-                                    <option value="sem_situacao">⚪ Sem situação</option>
-                                </select>
+                            <!-- Mobile Mais Filtros Toggle -->
+                            <div class="md:hidden flex items-center">
+                                <button id="btn-toggle-letras-more-filters" type="button" onclick="toggleLetrasMoreFilters()" class="w-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2" aria-expanded="false" aria-controls="letras-more-filters-panel">
+                                    <i class="fas fa-sliders-h"></i> <span id="letras-filters-btn-text">Mais filtros</span>
+                                </button>
                             </div>
 
-                            <div>
-                                <label for="filtro-letras-tom" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tom</label>
-                                <select id="filtro-letras-tom" class="w-full" onchange="aplicarFiltrosLetras()">
-                                    <option value="">Todos os Tons</option>
-                                </select>
-                            </div>
+                            <div id="letras-more-filters-panel" class="hidden md:contents">
+                                <div>
+                                    <label for="filtro-letras-situacao" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Situação</label>
+                                    <select id="filtro-letras-situacao" class="w-full" onchange="aplicarFiltrosLetras()">
+                                        <option value="">Todas as Situações</option>
+                                        <option value="idea">💡 Ideia</option>
+                                        <option value="in_progress">✍️ Em composição</option>
+                                        <option value="unfinished">⏳ Falta terminar</option>
+                                        <option value="finished">✅ Finalizada</option>
+                                        <option value="recorded">🎙️ Gravada</option>
+                                        <option value="sem_situacao">⚪ Sem situação</option>
+                                    </select>
+                                </div>
 
-                            <div>
-                                <label for="filtro-letras-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status / Acervo</label>
-                                <select id="filtro-letras-status" class="w-full" onchange="aplicarFiltrosLetras()">
-                                    <option value="ativas">Músicas Ativas</option>
-                                    <option value="fixadas">📌 Fixadas da Semana</option>
-                                    <option value="arquivadas">📦 Arquivadas</option>
-                                    <option value="todas">Todas as Músicas</option>
-                                </select>
+                                <div>
+                                    <label for="filtro-letras-tom" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tom</label>
+                                    <select id="filtro-letras-tom" class="w-full" onchange="aplicarFiltrosLetras()">
+                                        <option value="">Todos os Tons</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="filtro-letras-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Status / Acervo</label>
+                                    <select id="filtro-letras-status" class="w-full" onchange="aplicarFiltrosLetras()">
+                                        <option value="ativas">Músicas Ativas</option>
+                                        <option value="fixadas">📌 Fixadas da Semana</option>
+                                        <option value="arquivadas">📦 Arquivadas</option>
+                                        <option value="todas">Todas as Músicas</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="mt-4 text-xs text-slate-500 font-bold flex justify-between items-center" id="letras-filter-count">
@@ -339,8 +378,11 @@
                         </div>
                     </div>
 
-                    <!-- Formulário de Cadastro / Edição -->
-                    <div class="glass-form p-8 mb-10" id="form-letras-container">
+                    <!-- Lista de Cards (Exibida em Primeiro) -->
+                    <div id="list-letras" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"></div>
+
+                    <!-- Formulário de Cadastro / Edição Recolhível (Inicia Fechado) -->
+                    <div class="glass-form p-8 mb-10 hidden" id="form-letras-container" style="display: none;">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest" id="letras-form-title">Cadastrar Nova Música</h3>
                             <button onclick="cancelarEdicaoLetra()" id="btn-letra-cancel" class="hidden text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors">Cancelar Edição</button>
@@ -389,169 +431,144 @@
                             <button onclick="addLetra()" id="btn-salvar-letra" class="btn-gold-full flex-1">Salvar Música</button>
                         </div>
                     </div>
-
-                    <!-- Lista de Cards -->
-                    <div id="list-letras" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </section>
 
                 <!-- VIEW: CAIXA (FINANCEIRO PRO) -->
                 <section id="caixa-view" class="view hidden">
-                    <div class="view-header-flex mb-8">
+                    <!-- 1. CABEÇALHO E 2. AÇÕES PRINCIPAIS -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-white p-6 sm:p-8 rounded-[2rem] border border-slate-100 shadow-sm">
                         <div>
                             <h1 class="text-3xl font-black text-black">Financeiro</h1>
-                            <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Gestão de Fundos e Caixinhas</p>
+                            <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Controle de entradas e saídas da Missão</p>
                         </div>
-                        <button onclick="shareFinanceWhatsApp()" class="btn-whatsapp-premium">
-                            <i class="fab fa-whatsapp"></i> Compartilhar Saldos
-                        </button>
+                        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                            <button id="btn-toggle-caixa-form" type="button" onclick="toggleCaixaForm()" class="btn-gold py-3 px-5 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-md shadow-gold/20 flex-1 sm:flex-initial" aria-expanded="false" aria-controls="form-caixa-container">
+                                <i class="fas fa-plus-circle"></i> <span>Novo lançamento</span>
+                            </button>
+                            <button id="btn-export-csv" type="button" onclick="exportarCSV()" class="btn-white py-3 px-4 rounded-2xl border border-slate-200 hover:bg-slate-50 flex items-center justify-center gap-2 font-bold text-xs text-slate-700 shadow-sm flex-1 sm:flex-initial">
+                                <i class="fas fa-file-csv text-emerald-600"></i> <span>Exportar CSV</span>
+                            </button>
+                            <button id="btn-share-whatsapp" type="button" onclick="shareFinanceWhatsApp()" class="btn-whatsapp-premium flex items-center justify-center gap-2 flex-1 sm:flex-initial">
+                                <i class="fab fa-whatsapp"></i> <span>Compartilhar</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="caixinhas-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <!-- CAIXINHA VIAGEM -->
-                        <div class="caixinha-card bg-gradient-to-br from-indigo-600 to-indigo-800 text-white border-none shadow-lg shadow-indigo-200">
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-van-shuttle"></i></div>
-                                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Viagens</span>
+                    <!-- 3. RESUMO DE SALDOS (4 CARDS) -->
+                    <div class="caixinhas-grid-v2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+                        <!-- SALDO TOTAL GERAL -->
+                        <div class="caixinha-card caixinha-card-total bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white border border-slate-700/50 shadow-xl shadow-slate-900/10 sm:col-span-2 lg:col-span-1 p-5 rounded-3xl flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="w-10 h-10 rounded-2xl bg-gold/20 text-gold flex items-center justify-center text-sm"><i class="fas fa-wallet"></i></div>
+                                    <span class="text-[10px] font-black text-gold uppercase tracking-widest bg-gold/10 border border-gold/30 px-2.5 py-1 rounded-full">Saldo Geral</span>
+                                </div>
+                                <p class="text-xs text-slate-300 font-medium mb-1">Total Acumulado</p>
+                                <h2 id="saldo-total-geral-caixa" class="text-2xl sm:text-3xl font-black text-white tracking-tight break-words">R$ 0,00</h2>
                             </div>
-                            <p class="text-xs opacity-80 mb-1">Saldo Disponível</p>
-                            <h2 id="saldo-viagem" class="text-2xl font-black">R$ 0,00</h2>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-4">Soma das 3 caixinhas</p>
+                        </div>
+
+                        <!-- CAIXINHA VIAGEM -->
+                        <div class="caixinha-card bg-gradient-to-br from-indigo-600 to-indigo-800 text-white border-none shadow-lg shadow-indigo-200/50 p-5 rounded-3xl flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-sm"><i class="fas fa-van-shuttle"></i></div>
+                                    <span class="text-[10px] font-black opacity-80 uppercase tracking-widest bg-white/10 px-2.5 py-1 rounded-full">Viagens</span>
+                                </div>
+                                <p class="text-xs opacity-85 font-medium mb-1">Saldo Disponível</p>
+                                <h2 id="saldo-viagem" class="text-2xl font-black tracking-tight break-words">R$ 0,00</h2>
+                            </div>
                             <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-viagem" class="bg-white"></div></div>
                         </div>
 
                         <!-- CAIXINHA GRAVAÇÃO -->
-                        <div class="caixinha-card bg-gradient-to-br from-purple-600 to-purple-800 text-white border-none shadow-lg shadow-purple-200">
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-microphone-lines"></i></div>
-                                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Gravação</span>
+                        <div class="caixinha-card bg-gradient-to-br from-purple-600 to-purple-800 text-white border-none shadow-lg shadow-purple-200/50 p-5 rounded-3xl flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-sm"><i class="fas fa-microphone-lines"></i></div>
+                                    <span class="text-[10px] font-black opacity-80 uppercase tracking-widest bg-white/10 px-2.5 py-1 rounded-full">Gravação</span>
+                                </div>
+                                <p class="text-xs opacity-85 font-medium mb-1">Fundo de Produção</p>
+                                <h2 id="saldo-gravacao" class="text-2xl font-black tracking-tight break-words">R$ 0,00</h2>
                             </div>
-                            <p class="text-xs opacity-80 mb-1">Fundo de Produção</p>
-                            <h2 id="saldo-gravacao" class="text-2xl font-black">R$ 0,00</h2>
                             <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-gravacao" class="bg-white"></div></div>
                         </div>
 
                         <!-- CAIXINHA RIFA -->
-                        <div class="caixinha-card bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-none shadow-lg shadow-emerald-200">
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-ticket-alt"></i></div>
-                                <span class="text-[10px] font-black opacity-60 uppercase tracking-widest">Rifas</span>
+                        <div class="caixinha-card bg-gradient-to-br from-emerald-600 to-emerald-800 text-white border-none shadow-lg shadow-emerald-200/50 p-5 rounded-3xl flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-sm"><i class="fas fa-ticket-alt"></i></div>
+                                    <span class="text-[10px] font-black opacity-80 uppercase tracking-widest bg-white/10 px-2.5 py-1 rounded-full">Rifas</span>
+                                </div>
+                                <p class="text-xs opacity-85 font-medium mb-1">Arrecadação Rifa</p>
+                                <h2 id="saldo-rifa" class="text-2xl font-black tracking-tight break-words">R$ 0,00</h2>
                             </div>
-                            <p class="text-xs opacity-80 mb-1">Arrecadação Rifa</p>
-                            <h2 id="saldo-rifa" class="text-2xl font-black">R$ 0,00</h2>
                             <div class="cx-progress-bg bg-white/20 mt-4"><div id="bar-rifa" class="bg-white"></div></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="glass-form h-fit">
-                            <h3 class="text-lg font-black mb-6 flex items-center gap-2"><i class="fas fa-plus-circle text-gold"></i> Novo Lançamento</h3>
-                            <div class="space-y-4">
-
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Data</label>
-                                    <input type="date" id="caixa-data" class="w-full">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Descrição</label>
-                                    <input type="text" id="caixa-desc" placeholder="Ex: Oferta Missa, Venda Rifa..." class="w-full">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Valor (R$)</label>
-                                    <input type="number" id="caixa-valor" step="0.01" placeholder="0,00" class="w-full">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável</label>
-                                    <input type="text" id="caixa-responsavel" placeholder="Quem recebeu/pagou" class="w-full" maxlength="50">
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Destino</label>
-                                        <select id="caixa-destino" class="w-full">
-                                            <option value="viagem">Viagem</option>
-                                            <option value="gravacao">Gravação</option>
-                                            <option value="rifa">Rifa</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tipo</label>
-                                        <select id="caixa-tipo" class="w-full">
-                                            <option value="in" class="text-emerald-500">Entrada (+)</option>
-                                            <option value="out" class="text-red-500">Saída (-)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Categoria</label>
-                                        <select id="caixa-categoria" class="w-full">
-                                            <option value="Oferta">Oferta</option>
-                                            <option value="Doação">Doação</option>
-                                            <option value="Rifa">Rifa</option>
-                                            <option value="Evento">Evento</option>
-                                            <option value="Transporte">Transporte</option>
-                                            <option value="Alimentação">Alimentação</option>
-                                            <option value="Produção musical">Produção musical</option>
-                                            <option value="Equipamentos">Equipamentos</option>
-                                            <option value="Comunicação e divulgação">Comunicação e divulgação</option>
-                                            <option value="Material">Material</option>
-                                            <option value="Taxas">Taxas</option>
-                                            <option value="Outros">Outros</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Pagamento</label>
-                                        <select id="caixa-pagamento" class="w-full">
-                                            <option value="Dinheiro">Dinheiro</option>
-                                            <option value="PIX">PIX</option>
-                                            <option value="Transferência">Transferência</option>
-                                            <option value="Cartão">Cartão</option>
-                                            <option value="Boleto">Boleto</option>
-                                            <option value="Outro">Outro</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">URL do Comprovante (Opcional)</label>
-                                    <input type="url" id="caixa-comprovante" placeholder="https://..." class="w-full">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Observação (Opcional)</label>
-                                    <textarea id="caixa-obs" rows="2" placeholder="Detalhes adicionais..." class="w-full p-4 rounded-xl border border-slate-200" maxlength="300"></textarea>
-                                </div>
-                                <div id="caixa-error" class="text-red-500 text-xs font-bold hidden"></div>
-                                <div id="caixa-success" class="text-emerald-500 text-xs font-bold hidden">Salvo com sucesso!</div>
-                                <button id="btn-add-financeiro" onclick="addFinanceiro()" class="btn-gold-full py-4 mt-2">Confirmar Lançamento</button>
+                    <!-- 4. FILTROS DO EXTRATO & 5. LISTA DE LANÇAMENTOS -->
+                    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden mb-8">
+                        <!-- TOPO DO EXTRATO COM CONTADOR -->
+                        <div class="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 gap-4">
+                            <div class="flex items-center gap-3">
+                                <h3 class="font-black text-slate-800 uppercase text-xs sm:text-sm tracking-widest flex items-center gap-2">
+                                    <i class="fas fa-list-ul text-gold"></i> Extrato de Movimentações
+                                </h3>
+                                <span id="caixa-filtered-count" class="text-xs bg-slate-200 text-slate-700 px-2.5 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                            <!-- Mobile Toggle Mais Filtros & Limpar -->
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <button id="btn-toggle-caixa-more-filters" type="button" onclick="toggleCaixaMoreFilters()" class="md:hidden flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 transition-colors flex-1" aria-expanded="false" aria-controls="caixa-more-filters-panel">
+                                    <i class="fas fa-sliders-h text-gold"></i>
+                                    <span id="caixa-filters-btn-text">Mais filtros</span>
+                                </button>
+                                <button type="button" onclick="limparFiltrosCaixa()" class="text-xs text-slate-500 hover:text-slate-800 font-bold px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors">
+                                    <i class="fas fa-eraser"></i> Limpar
+                                </button>
                             </div>
                         </div>
 
-                        <div class="lg:col-span-2">
-                            <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-                                
-                                <div class="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 gap-4">
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="font-black text-slate-700 uppercase text-xs tracking-widest">Extrato</h3>
-                                        <span id="caixa-filtered-count" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-1 rounded-full font-bold">0</span>
-                                    </div>
-                                    <button onclick="exportarCSV()" class="btn-white text-xs py-2 px-4 shadow-sm border border-slate-200 rounded-xl hover:bg-slate-50 font-bold">
-                                        <i class="fas fa-file-csv text-emerald-600 mr-1"></i> Exportar CSV
-                                    </button>
+                        <!-- FILTROS (BARRA PRINCIPAL + PAINEL AVANÇADO) -->
+                        <div class="p-4 sm:p-5 bg-slate-50/70 border-b border-slate-100 space-y-3">
+                            <!-- LINHA DE BUSCA RÁPIDA -->
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" id="filtro-busca" placeholder="Buscar por descrição..." class="w-full pl-10 pr-4 py-3 bg-white rounded-xl border border-slate-200 text-sm font-medium focus:border-gold focus:ring-1 focus:ring-gold outline-none transition-all" oninput="aplicarFiltrosCaixa()">
+                            </div>
+
+                            <!-- PAINEL DE FILTROS AVANÇADOS (VISÍVEL NO DESKTOP, RECOLHÍVEL NO MOBILE) -->
+                            <div id="caixa-more-filters-panel" class="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-1">
+                                <div>
+                                    <label for="filtro-data-inicio" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Data Início</label>
+                                    <input type="date" id="filtro-data-inicio" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" onchange="aplicarFiltrosCaixa()">
                                 </div>
-                                <!-- FILTROS -->
-                                <div class="p-4 bg-slate-50 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                                    <input type="text" id="filtro-busca" placeholder="Buscar..." class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosCaixa()">
-                                    <input type="date" id="filtro-data-inicio" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
-                                    <input type="date" id="filtro-data-fim" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
-                                    <select id="filtro-destino" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                <div>
+                                    <label for="filtro-data-fim" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Data Fim</label>
+                                    <input type="date" id="filtro-data-fim" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" onchange="aplicarFiltrosCaixa()">
+                                </div>
+                                <div>
+                                    <label for="filtro-destino" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Destino</label>
+                                    <select id="filtro-destino" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" onchange="aplicarFiltrosCaixa()">
                                         <option value="">Todos os Destinos</option>
                                         <option value="viagem">Viagem</option>
                                         <option value="gravacao">Gravação</option>
                                         <option value="rifa">Rifa</option>
                                     </select>
-                                    <select id="filtro-tipo" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                </div>
+                                <div>
+                                    <label for="filtro-tipo" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Tipo</label>
+                                    <select id="filtro-tipo" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" onchange="aplicarFiltrosCaixa()">
                                         <option value="">Todas Entradas/Saídas</option>
-                                        <option value="in">Entrada</option>
-                                        <option value="out">Saída</option>
+                                        <option value="in">Entrada (+)</option>
+                                        <option value="out">Saída (-)</option>
                                     </select>
-                                    <select id="filtro-categoria" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                </div>
+                                <div>
+                                    <label for="filtro-categoria" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Categoria</label>
+                                    <select id="filtro-categoria" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" onchange="aplicarFiltrosCaixa()">
                                         <option value="">Todas as Categorias</option>
                                         <option value="Oferta">Oferta</option>
                                         <option value="Doação">Doação</option>
@@ -568,19 +585,136 @@
                                         <option value="Estorno">Estorno</option>
                                         <option value="Outros">Outros</option>
                                     </select>
-                                    <select id="filtro-status" class="w-full p-2 rounded-lg border border-slate-200" onchange="aplicarFiltrosCaixa()">
+                                </div>
+                                <div>
+                                    <label for="filtro-status" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Status</label>
+                                    <select id="filtro-status" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" onchange="aplicarFiltrosCaixa()">
                                         <option value="">Todos os Status</option>
                                         <option value="active">Ativo (Normal)</option>
                                         <option value="cancelled">Cancelado</option>
                                         <option value="reversed">Estornado (Original)</option>
                                         <option value="reversal">Estorno (Corretivo)</option>
                                     </select>
-                                    <input type="text" id="filtro-responsavel" placeholder="Responsável" class="w-full p-2 rounded-lg border border-slate-200" oninput="aplicarFiltrosCaixa()">
-                                    <button onclick="limparFiltrosCaixa()" class="text-slate-500 font-bold hover:text-slate-800 transition-colors py-2"><i class="fas fa-eraser"></i> Limpar Filtros</button>
                                 </div>
-                                <div id="list-caixa" class="divide-y divide-slate-50 max-h-[600px] overflow-y-auto">
+                                <div>
+                                    <label for="filtro-responsavel" class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Responsável</label>
+                                    <input type="text" id="filtro-responsavel" placeholder="Filtrar por nome..." class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 outline-none focus:border-gold" oninput="aplicarFiltrosCaixa()">
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" onclick="limparFiltrosCaixa()" class="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-100 hover:text-black transition-colors flex items-center justify-center gap-2">
+                                        <i class="fas fa-eraser"></i> Limpar Filtros
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- LISTA DE LANÇAMENTOS DO EXTRATO -->
+                        <div id="list-caixa" class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto overscroll-contain">
+                            <!-- Inserido dinamicamente via JS -->
+                        </div>
+                    </div>
+
+                    <!-- 6. FORMULÁRIO RECOLHÍVEL (NOVO LANÇAMENTO) -->
+                    <div id="form-caixa-container" class="glass-form hidden mt-8 bg-white p-6 sm:p-8 rounded-[2rem] border border-slate-100 shadow-md" style="display: none;">
+                        <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                            <h3 class="text-xl font-black text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-gold"></i> Novo Lançamento
+                            </h3>
+                            <button type="button" onclick="toggleCaixaForm()" class="text-slate-400 hover:text-black p-2 rounded-xl hover:bg-slate-100 transition-colors" aria-label="Fechar formulário">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="caixa-data" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Data *</label>
+                                    <input type="date" id="caixa-data" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
                                 </div>
+                                <div>
+                                    <label for="caixa-valor" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Valor (R$) *</label>
+                                    <input type="number" id="caixa-valor" step="0.01" placeholder="0,00" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="caixa-desc" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Descrição *</label>
+                                <input type="text" id="caixa-desc" placeholder="Ex: Oferta Missa, Venda Rifa, Combustível..." class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all" maxlength="100">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="caixa-responsavel" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Responsável *</label>
+                                    <input type="text" id="caixa-responsavel" placeholder="Quem recebeu ou pagou" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all" maxlength="50">
+                                </div>
+                                <div>
+                                    <label for="caixa-destino" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Destino *</label>
+                                    <select id="caixa-destino" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
+                                        <option value="viagem">Viagem</option>
+                                        <option value="gravacao">Gravação</option>
+                                        <option value="rifa">Rifa</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="caixa-tipo" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Tipo *</label>
+                                    <select id="caixa-tipo" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
+                                        <option value="in" class="text-emerald-600 font-bold">Entrada (+)</option>
+                                        <option value="out" class="text-red-600 font-bold">Saída (-)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="caixa-categoria" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Categoria *</label>
+                                    <select id="caixa-categoria" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
+                                        <option value="Oferta">Oferta</option>
+                                        <option value="Doação">Doação</option>
+                                        <option value="Rifa">Rifa</option>
+                                        <option value="Evento">Evento</option>
+                                        <option value="Transporte">Transporte</option>
+                                        <option value="Alimentação">Alimentação</option>
+                                        <option value="Produção musical">Produção musical</option>
+                                        <option value="Equipamentos">Equipamentos</option>
+                                        <option value="Comunicação e divulgação">Comunicação e divulgação</option>
+                                        <option value="Material">Material</option>
+                                        <option value="Taxas">Taxas</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="caixa-pagamento" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Forma de Pagamento *</label>
+                                    <select id="caixa-pagamento" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="PIX">PIX</option>
+                                        <option value="Transferência">Transferência</option>
+                                        <option value="Cartão">Cartão</option>
+                                        <option value="Boleto">Boleto</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="caixa-comprovante" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">URL do Comprovante (Opcional)</label>
+                                <input type="url" id="caixa-comprovante" placeholder="https://drive.google.com/..." class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all">
+                            </div>
+
+                            <div>
+                                <label for="caixa-obs" class="block text-[10px] font-bold text-slate-400 uppercase ml-1 mb-1">Observação (Opcional)</label>
+                                <textarea id="caixa-obs" rows="2" placeholder="Detalhes adicionais..." class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-gold focus:bg-white transition-all" maxlength="300"></textarea>
+                            </div>
+
+                            <div id="caixa-error" class="text-red-500 text-xs font-bold p-3 bg-red-50 rounded-xl border border-red-100 hidden"></div>
+                            <div id="caixa-success" class="text-emerald-600 text-xs font-bold p-3 bg-emerald-50 rounded-xl border border-emerald-100 hidden">Salvo com sucesso!</div>
+
+                            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                                <button id="btn-add-financeiro" type="button" onclick="addFinanceiro()" class="btn-gold-full py-4 flex-1 font-bold shadow-lg shadow-gold/20">
+                                    Confirmar Lançamento
+                                </button>
+                                <button id="btn-caixa-form-cancel" type="button" onclick="toggleCaixaForm()" class="py-4 px-6 rounded-2xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors">
+                                    Cancelar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -628,56 +762,56 @@
     
     <!-- MODAL CANCELAR -->
     <div id="modal-cancelar" class="modal-overlay" onclick="fecharModalCancelar(event)" role="dialog" aria-modal="true" aria-labelledby="modal-cancelar-titulo">
-        <div class="modal-window p-8" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="modal-cancelar-titulo" class="text-xl font-black text-red-600"><i class="fas fa-ban"></i> Cancelar Lançamento</h2>
-                <button onclick="fecharModalCancelar(event)" class="text-slate-400 hover:text-black"><i class="fas fa-times"></i></button>
+        <div class="modal-window p-6 sm:p-8 max-w-lg w-full mx-4 rounded-3xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6 pb-2 border-b border-slate-100">
+                <h2 id="modal-cancelar-titulo" class="text-xl font-black text-red-600 flex items-center gap-2"><i class="fas fa-ban"></i> Cancelar Lançamento</h2>
+                <button type="button" onclick="fecharModalCancelar(event)" class="text-slate-400 hover:text-black p-2 rounded-xl" aria-label="Fechar modal"><i class="fas fa-times text-lg"></i></button>
             </div>
             <p class="text-sm text-slate-600 mb-4">Tem certeza? O valor deixará de compor os saldos, mas o registro continuará no histórico.</p>
             <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pelo Cancelamento *</label>
-                    <input type="text" id="cancelar-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                    <label for="cancelar-resp" class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">Responsável pelo Cancelamento *</label>
+                    <input type="text" id="cancelar-resp" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-red-400" placeholder="Seu nome" maxlength="50">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Motivo do Cancelamento *</label>
-                    <textarea id="cancelar-motivo" class="w-full p-4 rounded-xl border border-slate-200" rows="3" placeholder="Ex: Lançado duplicado..." maxlength="200"></textarea>
+                    <label for="cancelar-motivo" class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">Motivo do Cancelamento *</label>
+                    <textarea id="cancelar-motivo" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-red-400" rows="3" placeholder="Ex: Lançado duplicado..." maxlength="200"></textarea>
                 </div>
             </div>
-            <div id="cancelar-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
-            <div class="mt-6 flex justify-end gap-3">
-                <button onclick="fecharModalCancelar(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
-                <button id="btn-confirmar-cancelar" onclick="confirmarCancelamento()" class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Confirmar Cancelamento</button>
+            <div id="cancelar-error" class="text-red-500 text-xs font-bold mt-3 p-3 bg-red-50 rounded-xl border border-red-100 hidden"></div>
+            <div class="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                <button type="button" onclick="fecharModalCancelar(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black rounded-xl hover:bg-slate-100 transition-colors">Voltar</button>
+                <button type="button" id="btn-confirmar-cancelar" onclick="confirmarCancelamento()" class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 hover:bg-red-700 transition-colors">Confirmar Cancelamento</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL ESTORNO -->
     <div id="modal-estorno" class="modal-overlay" onclick="fecharModalEstorno(event)" role="dialog" aria-modal="true" aria-labelledby="modal-estorno-titulo">
-        <div class="modal-window p-8" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="modal-estorno-titulo" class="text-xl font-black text-amber-600"><i class="fas fa-undo-alt"></i> Estornar Lançamento</h2>
-                <button onclick="fecharModalEstorno(event)" class="text-slate-400 hover:text-black"><i class="fas fa-times"></i></button>
+        <div class="modal-window p-6 sm:p-8 max-w-lg w-full mx-4 rounded-3xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6 pb-2 border-b border-slate-100">
+                <h2 id="modal-estorno-titulo" class="text-xl font-black text-amber-600 flex items-center gap-2"><i class="fas fa-undo-alt"></i> Estornar Lançamento</h2>
+                <button type="button" onclick="fecharModalEstorno(event)" class="text-slate-400 hover:text-black p-2 rounded-xl" aria-label="Fechar modal"><i class="fas fa-times text-lg"></i></button>
             </div>
             <p class="text-sm text-slate-600 mb-4">Isso criará uma movimentação oposta para zerar o efeito deste lançamento. O lançamento original será mantido.</p>
             <div class="space-y-4">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Data do Estorno *</label>
-                    <input type="date" id="estorno-data" class="w-full">
+                    <label for="estorno-data" class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">Data do Estorno *</label>
+                    <input type="date" id="estorno-data" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-amber-400">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Responsável pelo Estorno *</label>
-                    <input type="text" id="estorno-resp" class="w-full" placeholder="Seu nome" maxlength="50">
+                    <label for="estorno-resp" class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">Responsável pelo Estorno *</label>
+                    <input type="text" id="estorno-resp" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-amber-400" placeholder="Seu nome" maxlength="50">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Motivo do Estorno *</label>
-                    <textarea id="estorno-motivo" class="w-full p-4 rounded-xl border border-slate-200" rows="3" placeholder="Ex: Valor devolvido..." maxlength="200"></textarea>
+                    <label for="estorno-motivo" class="text-[10px] font-bold text-slate-400 uppercase ml-1 block mb-1">Motivo do Estorno *</label>
+                    <textarea id="estorno-motivo" class="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 outline-none focus:border-amber-400" rows="3" placeholder="Ex: Valor devolvido..." maxlength="200"></textarea>
                 </div>
             </div>
-            <div id="estorno-error" class="text-red-500 text-xs font-bold mt-2 hidden"></div>
-            <div class="mt-6 flex justify-end gap-3">
-                <button onclick="fecharModalEstorno(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black transition-colors">Voltar</button>
-                <button id="btn-confirmar-estorno" onclick="confirmarEstorno()" class="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 hover:bg-amber-700 transition-colors">Confirmar Estorno</button>
+            <div id="estorno-error" class="text-red-500 text-xs font-bold mt-3 p-3 bg-amber-50 rounded-xl border border-amber-100 hidden"></div>
+            <div class="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                <button type="button" onclick="fecharModalEstorno(event)" class="px-6 py-3 font-bold text-slate-500 hover:text-black rounded-xl hover:bg-slate-100 transition-colors">Voltar</button>
+                <button type="button" id="btn-confirmar-estorno" onclick="confirmarEstorno()" class="px-6 py-3 bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 hover:bg-amber-700 transition-colors">Confirmar Estorno</button>
             </div>
         </div>
     </div>
@@ -689,7 +823,7 @@
             <div class="p-6 border-b flex flex-wrap justify-between items-center gap-4 transition-colors duration-300" id="presentation-header">
                 <div class="flex-1 min-w-[200px]">
                     <div class="flex items-center gap-3">
-                        <h2 id="modal-titulo" class="text-2xl font-black truncate"></h2>
+                        <h2 id="modal-titulo" class="presentation-title text-2xl font-black"></h2>
                         <span id="modal-pinned-badge" class="hidden text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full"><i class="fas fa-thumbtack"></i> Fixada</span>
                         <span id="modal-archived-badge" class="hidden text-xs bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-full"><i class="fas fa-box-archive"></i> Arquivada</span>
                     </div>
@@ -702,7 +836,7 @@
                 <!-- Barra de ferramentas do Modo Apresentação -->
                 <div class="flex items-center gap-2 flex-wrap">
                     <button type="button" onclick="ajustarFonteApresentacao(-2)" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-sm hover:bg-slate-100 transition-colors" title="Diminuir fonte" aria-label="Diminuir fonte">A-</button>
-                    <button type="button" onclick="resetarFonteApresentacao()" class="px-3 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-xs hover:bg-slate-100 transition-colors" title="Tamanho padrão" aria-label="Tamanho padrão">100%</button>
+                    <button type="button" id="presentation-font-percent" onclick="resetarFonteApresentacao()" class="px-3 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-xs hover:bg-slate-100 transition-colors" title="Tamanho padrão (100%)" aria-label="Tamanho padrão (100%)">100%</button>
                     <button type="button" onclick="ajustarFonteApresentacao(2)" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center font-bold text-sm hover:bg-slate-100 transition-colors" title="Aumentar fonte" aria-label="Aumentar fonte">A+</button>
                     
                     <button type="button" onclick="alternarTemaApresentacao()" id="btn-theme-presentation" class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-sm hover:bg-slate-100 transition-colors" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">

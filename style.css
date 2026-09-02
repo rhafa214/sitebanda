@@ -3,7 +3,7 @@
     --gold-light: #F1D592;
     --sidebar-bg: #000000;
     --main-bg: #F8FAFC;
-    --sidebar-w: 280px;
+    --sidebar-w: 250px;
 }
 
 * { 
@@ -63,6 +63,22 @@ body {
     align-items: center; 
     justify-content: center; 
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+#mission-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.presentation-title {
+    min-width: 0;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 3.2em;
 }
 .brand-name { display: block; font-size: 1.6rem; font-weight: 800; letter-spacing: -1px; }
 .brand-tagline { display: block; font-size: 0.65rem; font-weight: 700; color: var(--gold); letter-spacing: 3px; margin-top: 2px; }
@@ -196,28 +212,63 @@ input::placeholder { color: #94a3b8; font-weight: 400; }
 .modal-overlay { display: none; position: fixed; z-index: 10000; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
 .modal-window { background: white; margin: 40px auto; width: 90%; max-width: 800px; border-radius: 40px; overflow: hidden; }
 
+/* SIDEBAR BACKDROP */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.sidebar-backdrop.active {
+    display: block;
+    opacity: 1;
+}
+
 /* RESPONSIVIDADE CELULAR UNIFICADA */
 @media (max-width: 768px) {
     body { overflow-y: auto !important; height: auto !important; }
     .app-shell.is-authenticated { display: block; }
     
-    .sidebar { position: fixed; left: -100%; z-index: 10001; width: 85%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.5); padding-top: 60px; }
-    .sidebar.active { left: 0; }
+    .sidebar { position: fixed; left: -100%; top: 0; z-index: 10001; width: min(86vw, 320px); height: 100dvh; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-100%); box-shadow: 20px 0 50px rgba(0,0,0,0.5); padding-top: 30px; }
+    .sidebar.active { transform: translateX(0); left: 0; }
     
-    .main-header { position: sticky; top: 0; z-index: 999; padding: 0 20px; }
-    .mobile-menu-btn { display: block !important; background: #000; color: var(--gold); padding: 10px; border-radius: 12px; margin-right: 15px; }
+    .main-header { position: sticky; top: 0; z-index: 999; padding: 0 20px; height: 60px; }
+    .mobile-menu-btn { display: flex !important; align-items: center; justify-content: center; width: 44px; height: 44px; background: #000; color: var(--gold); border-radius: 12px; font-size: 1.1rem; border: none; cursor: pointer; }
     
     .bento-grid, .caixinhas-grid, .grid, .grid-cols-2 { grid-template-columns: 1fr !important; }
     .col-span-2, .col-span-full { grid-column: span 1 !important; }
-    .view-wrapper { padding: 20px; }
+    .view-wrapper { padding: 16px; }
     .digital-clock { display: none; }
     
     /* MODAL CELULAR */
-    .modal-overlay { overflow: hidden; display: none; align-items: flex-start; }
-    .modal-window { width: 100% !important; height: 100% !important; margin: 0 !important; border-radius: 0 !important; display: flex; flex-direction: column; }
-    .modal-header-pro { padding: 15px 20px; flex-shrink: 0; position: sticky; top: 0; z-index: 100; background: #000; }
-    .modal-lyrics-body { flex: 1; overflow-y: auto !important; -webkit-overflow-scrolling: touch; padding: 30px 20px 150px 20px !important; background: #fff; }
-    .modal-lyrics-body div, .modal-lyrics-body p, .modal-lyrics-body pre { font-size: 1.4rem !important; line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
+    .modal-overlay { overflow-y: auto; display: none; align-items: center; justify-content: center; }
+    #presentation-window { width: 100% !important; height: 100dvh !important; max-width: none !important; margin: 0 !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+    #modal-cancelar .modal-window,
+    #modal-estorno .modal-window,
+    #modal-agenda-cancelar .modal-window,
+    #modal-letra-arquivar .modal-window,
+    #modal-letra-restaurar .modal-window,
+    #modal-gmail-limpar-cache .modal-window {
+        width: min(94vw, 520px) !important;
+        height: auto !important;
+        max-height: 90dvh !important;
+        margin: auto !important;
+        border-radius: 28px !important;
+        display: block !important;
+        overflow-y: auto !important;
+    }
+    #presentation-header { padding: 12px 16px !important; flex-shrink: 0 !important; }
+    #presentation-header h2 { font-size: 1.15rem !important; }
+    #presentation-header .flex.items-center.gap-2.flex-wrap { gap: 6px !important; }
+    #presentation-header button, #presentation-header a { min-width: 44px !important; min-height: 44px !important; width: 44px !important; height: 44px !important; border-radius: 12px !important; font-size: 0.95rem !important; }
+    #presentation-header button#btn-close-presentation { width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; flex-shrink: 0 !important; }
+    #presentation-header a#modal-drive-btn { width: auto !important; padding: 0 12px !important; }
+    .modal-lyrics-body { flex: 1 !important; overflow-y: auto !important; overscroll-behavior: contain !important; -webkit-overflow-scrolling: touch !important; min-height: 0 !important; padding: 20px 18px 120px 18px !important; background: #fff; }
+    .modal-lyrics-body pre#modal-corpo { line-height: 1.7 !important; white-space: pre-wrap !important; overflow-wrap: break-word !important; word-break: break-word !important; }
 
     /* OUTROS AJUSTES */
     .balance-text { font-size: 2.2rem !important; }
@@ -262,4 +313,28 @@ input::placeholder { color: #94a3b8; font-weight: 400; }
         scroll-behavior: auto !important;
     }
 }
+
+.main-content,
+.view-wrapper,
+.view,
+.bento-grid,
+.bento-grid > *,
+.bento-card {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .bento-card {
+        padding: 20px !important;
+    }
+    .card-head {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .bento-card h2, .bento-card h3 {
+        overflow-wrap: anywhere;
+    }
+}
+
 

@@ -204,6 +204,14 @@ window.handleLogout = () => {
 // ==========================================
 // 3. NAVEGAÇÃO E UI GERAL
 // ==========================================
+const viewTitles = {
+    dashboard: 'Dashboard',
+    agenda: 'Agenda',
+    letras: 'Repertório',
+    caixa: 'Financeiro',
+    docs: 'Documentos'
+};
+
 window.router = (id) => {
     document.querySelectorAll('.view').forEach(v => {
         v.classList.add('hidden');
@@ -221,17 +229,148 @@ window.router = (id) => {
     if(navBtn) navBtn.classList.add('active');
     
     const bread = document.getElementById('breadcrumb');
-    if(bread) bread.innerText = id.toUpperCase();
+    if(bread) bread.textContent = viewTitles[id] || id;
     
     if (window.innerWidth <= 768) {
         const sidebar = document.querySelector('.sidebar');
-        if(sidebar) sidebar.classList.remove('active');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        if(sidebar && sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            if(backdrop) backdrop.classList.remove('active');
+            document.body.classList.remove('overflow-hidden');
+            if(menuBtn) {
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuBtn.focus();
+            }
+        }
     }
     
     if(id === 'dashboard') sortearFraseFirebase();
 };
 
-window.toggleMobileMenu = () => document.querySelector('.sidebar').classList.toggle('active');
+window.toggleMobileMenu = () => {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    if (!sidebar) return;
+    const isOpen = sidebar.classList.toggle('active');
+    if(backdrop) backdrop.classList.toggle('active', isOpen);
+    document.body.classList.toggle('overflow-hidden', isOpen);
+    if(menuBtn) {
+        menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+};
+
+document.addEventListener('keydown', (e) => {
+    const modalLetras = document.getElementById('lyric-modal');
+    const isModalLetrasOpen = modalLetras && (modalLetras.style.display === 'block' || !modalLetras.classList.contains('hidden'));
+
+    const modalLetraArquivar = document.getElementById('modal-letra-arquivar');
+    const isModalLetraArquivarOpen = modalLetraArquivar && (modalLetraArquivar.style.display === 'block' || !modalLetraArquivar.classList.contains('hidden'));
+
+    const modalLetraRestaurar = document.getElementById('modal-letra-restaurar');
+    const isModalLetraRestaurarOpen = modalLetraRestaurar && (modalLetraRestaurar.style.display === 'block' || !modalLetraRestaurar.classList.contains('hidden'));
+
+    const modalGmailLimpar = document.getElementById('modal-gmail-limpar-cache');
+    const isModalGmailLimparOpen = modalGmailLimpar && (modalGmailLimpar.style.display === 'block' || !modalGmailLimpar.classList.contains('hidden'));
+
+    const modalCancelar = document.getElementById('modal-cancelar');
+    const isModalCancelarOpen = modalCancelar && modalCancelar.style.display === 'block';
+
+    const modalEstorno = document.getElementById('modal-estorno');
+    const isModalEstornoOpen = modalEstorno && modalEstorno.style.display === 'block';
+
+    const modalAgendaCancelar = document.getElementById('modal-agenda-cancelar');
+    const isModalAgendaCancelarOpen = modalAgendaCancelar && !modalAgendaCancelar.classList.contains('hidden');
+
+    const modalSocial = document.getElementById('social-modal');
+    const isModalSocialOpen = modalSocial && modalSocial.style.display === 'block';
+
+    if (e.key === 'Tab') {
+        if (isModalLetrasOpen) {
+            trapFocusInModal(e, document.getElementById('presentation-window'));
+        } else if (isModalLetraArquivarOpen) {
+            trapFocusInModal(e, modalLetraArquivar.querySelector('.modal-window'));
+        } else if (isModalLetraRestaurarOpen) {
+            trapFocusInModal(e, modalLetraRestaurar.querySelector('.modal-window'));
+        } else if (isModalGmailLimparOpen) {
+            trapFocusInModal(e, modalGmailLimpar.querySelector('.modal-window'));
+        }
+        return;
+    }
+
+    if (e.key === 'Escape') {
+        if (isModalGmailLimparOpen) {
+            window.fecharModalLimparCacheGmail(null, false);
+            return;
+        }
+        if (isModalCancelarOpen) {
+            window.fecharModalCancelar();
+            return;
+        }
+        if (isModalEstornoOpen) {
+            window.fecharModalEstorno();
+            return;
+        }
+        if (isModalAgendaCancelarOpen) {
+            window.fecharModalAgendaCancelar();
+            return;
+        }
+        if (isModalLetraRestaurarOpen) {
+            window.fecharModalRestaurarLetra(null, true);
+            return;
+        }
+        if (isModalLetraArquivarOpen) {
+            window.fecharModalArquivarLetra(null, true);
+            return;
+        }
+        if (isModalLetrasOpen) {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            } else {
+                window.closeModal();
+            }
+            return;
+        }
+        if (isModalSocialOpen) {
+            modalSocial.style.display = 'none';
+            return;
+        }
+
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('active')) {
+            window.toggleMobileMenu();
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            if (menuBtn) menuBtn.focus();
+            return;
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const missionLogo = document.getElementById('mission-logo');
+    const logoContainer = document.getElementById('brand-logo-container');
+    if (missionLogo && logoContainer) {
+        missionLogo.onload = () => {
+            if (missionLogo.naturalWidth > 1 && missionLogo.naturalHeight > 1) {
+                logoContainer.style.display = 'flex';
+            } else {
+                logoContainer.style.display = 'none';
+            }
+        };
+        missionLogo.onerror = () => {
+            logoContainer.style.display = 'none';
+        };
+        if (missionLogo.complete) {
+            if (missionLogo.naturalWidth <= 1 || missionLogo.naturalHeight <= 1) {
+                logoContainer.style.display = 'none';
+            } else {
+                logoContainer.style.display = 'flex';
+            }
+        }
+    }
+});
 
 // ==========================================
 // 4. SINCRONIZAÇÃO DE DADOS (FIRESTORE)
@@ -900,6 +1039,131 @@ function isValidReceiptUrl(url) {
     }
 }
 
+let caixaFormOpen = false;
+let caixaFiltersOpen = false;
+
+window.toggleCaixaForm = () => {
+    const formContainer = document.getElementById('form-caixa-container');
+    const btn = document.getElementById('btn-toggle-caixa-form');
+    if (!formContainer || !btn) return;
+
+    if (caixaFormOpen) {
+        const desc = document.getElementById('caixa-desc')?.value.trim() || '';
+        const valor = document.getElementById('caixa-valor')?.value.trim() || '';
+        const responsavel = document.getElementById('caixa-responsavel')?.value.trim() || '';
+        const comprovante = document.getElementById('caixa-comprovante')?.value.trim() || '';
+        const obs = document.getElementById('caixa-obs')?.value.trim() || '';
+
+        if (desc || valor || responsavel || comprovante || obs) {
+            if (!confirm("Existem informações preenchidas no formulário. Deseja descartar as alterações não salvas?")) {
+                return;
+            }
+        }
+
+        caixaFormOpen = false;
+        formContainer.style.display = 'none';
+        formContainer.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (span) span.textContent = 'Novo lançamento';
+        if (icon) icon.className = 'fas fa-plus-circle';
+
+        window.limparFormularioCaixa();
+    } else {
+        caixaFormOpen = true;
+        formContainer.style.display = 'block';
+        formContainer.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (span) span.textContent = 'Fechar formulário';
+        if (icon) icon.className = 'fas fa-times';
+
+        const dataInput = document.getElementById('caixa-data');
+        if (dataInput && !dataInput.value) {
+            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+            dataInput.value = (new Date(Date.now() - tzOffset)).toISOString().slice(0, 10);
+        }
+
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        formContainer.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+        setTimeout(() => {
+            const firstInput = document.getElementById('caixa-desc') || document.getElementById('caixa-data');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
+};
+
+window.limparFormularioCaixa = () => {
+    if (document.getElementById('caixa-desc')) document.getElementById('caixa-desc').value = '';
+    if (document.getElementById('caixa-valor')) document.getElementById('caixa-valor').value = '';
+    if (document.getElementById('caixa-responsavel')) document.getElementById('caixa-responsavel').value = '';
+    if (document.getElementById('caixa-comprovante')) document.getElementById('caixa-comprovante').value = '';
+    if (document.getElementById('caixa-obs')) document.getElementById('caixa-obs').value = '';
+    if (document.getElementById('caixa-destino')) document.getElementById('caixa-destino').value = 'viagem';
+    if (document.getElementById('caixa-tipo')) document.getElementById('caixa-tipo').value = 'in';
+    if (document.getElementById('caixa-categoria')) document.getElementById('caixa-categoria').value = 'Oferta';
+    if (document.getElementById('caixa-pagamento')) document.getElementById('caixa-pagamento').value = 'Dinheiro';
+    if (document.getElementById('caixa-error')) document.getElementById('caixa-error').classList.add('hidden');
+    if (document.getElementById('caixa-success')) document.getElementById('caixa-success').classList.add('hidden');
+    
+    const dataInput = document.getElementById('caixa-data');
+    if (dataInput) {
+        const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+        dataInput.value = (new Date(Date.now() - tzOffset)).toISOString().slice(0, 10);
+    }
+};
+
+window.toggleCaixaMoreFilters = () => {
+    const panel = document.getElementById('caixa-more-filters-panel');
+    const btn = document.getElementById('btn-toggle-caixa-more-filters');
+    if (!panel || !btn) return;
+
+    caixaFiltersOpen = !caixaFiltersOpen;
+    if (caixaFiltersOpen) {
+        panel.style.display = 'grid';
+        panel.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+    } else {
+        panel.style.display = 'none';
+        panel.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+    }
+};
+
+window.atualizarContadorFiltrosCaixa = () => {
+    const dataInicio = document.getElementById('filtro-data-inicio')?.value || '';
+    const dataFim = document.getElementById('filtro-data-fim')?.value || '';
+    const destino = document.getElementById('filtro-destino')?.value || '';
+    const tipo = document.getElementById('filtro-tipo')?.value || '';
+    const categoria = document.getElementById('filtro-categoria')?.value || '';
+    const status = document.getElementById('filtro-status')?.value || '';
+    const responsavel = document.getElementById('filtro-responsavel')?.value.trim() || '';
+
+    let ativas = 0;
+    if (dataInicio) ativas++;
+    if (dataFim) ativas++;
+    if (destino) ativas++;
+    if (tipo) ativas++;
+    if (categoria) ativas++;
+    if (status) ativas++;
+    if (responsavel) ativas++;
+
+    const btnText = document.getElementById('caixa-filters-btn-text');
+    const btn = document.getElementById('btn-toggle-caixa-more-filters');
+    if (btnText) {
+        btnText.textContent = ativas > 0 ? `Mais filtros (${ativas})` : 'Mais filtros';
+    }
+    if (btn) {
+        if (ativas > 0) {
+            btn.classList.add('border-gold', 'bg-amber-50', 'text-amber-800');
+        } else {
+            btn.classList.remove('border-gold', 'bg-amber-50', 'text-amber-800');
+        }
+    }
+};
+
 window.addFinanceiro = async () => {
     const dataEl = document.getElementById('caixa-data');
     const descEl = document.getElementById('caixa-desc');
@@ -932,18 +1196,23 @@ window.addFinanceiro = async () => {
     if (!data || !desc || !valorEl.value || !responsavel || !destino || !tipo || !categoria || !pagamento) {
         errorEl.innerText = "Preencha todos os campos obrigatórios.";
         errorEl.classList.remove('hidden');
+        if (!desc) descEl.focus();
+        else if (!valorEl.value) valorEl.focus();
+        else if (!responsavel) responsavelEl.focus();
         return;
     }
     
     if (valor <= 0 || isNaN(valor) || !isFinite(valor)) {
         errorEl.innerText = "O valor deve ser numérico e maior que zero.";
         errorEl.classList.remove('hidden');
+        valorEl.focus();
         return;
     }
 
     if (comprovanteUrl && !isValidReceiptUrl(comprovanteUrl)) {
         errorEl.innerText = "A URL do comprovante deve ser válida, usar https:// e não conter credenciais.";
         errorEl.classList.remove('hidden');
+        comprovanteEl.focus();
         return;
     }
 
@@ -975,7 +1244,21 @@ window.addFinanceiro = async () => {
         obsEl.value = "";
         
         successEl.classList.remove('hidden');
-        setTimeout(() => successEl.classList.add('hidden'), 3000);
+        setTimeout(() => {
+            successEl.classList.add('hidden');
+            const formContainer = document.getElementById('form-caixa-container');
+            const btnToggle = document.getElementById('btn-toggle-caixa-form');
+            if (formContainer && btnToggle && caixaFormOpen) {
+                caixaFormOpen = false;
+                formContainer.style.display = 'none';
+                formContainer.classList.add('hidden');
+                btnToggle.setAttribute('aria-expanded', 'false');
+                const span = btnToggle.querySelector('span');
+                const icon = btnToggle.querySelector('i');
+                if (span) span.textContent = 'Novo lançamento';
+                if (icon) icon.className = 'fas fa-plus-circle';
+            }
+        }, 1200);
     } catch (e) {
         console.error("Erro ao salvar:", e);
         errorEl.innerText = "Erro interno ao salvar. Tente novamente.";
@@ -1001,23 +1284,25 @@ function normalizar(texto) {
 let transacoesGlobais = [];
 
 window.aplicarFiltrosCaixa = () => {
+    window.atualizarContadorFiltrosCaixa();
+
     if (!transacoesGlobais || transacoesGlobais.length === 0) {
         renderTransacoesFiltradas([]);
         return;
     }
 
-    const busca = document.getElementById('filtro-busca').value.trim().toLowerCase();
-    const dataInicio = document.getElementById('filtro-data-inicio').value;
-    const dataFim = document.getElementById('filtro-data-fim').value;
-    const destino = document.getElementById('filtro-destino').value;
-    const tipo = document.getElementById('filtro-tipo').value;
+    const busca = document.getElementById('filtro-busca')?.value.trim().toLowerCase() || '';
+    const dataInicio = document.getElementById('filtro-data-inicio')?.value || '';
+    const dataFim = document.getElementById('filtro-data-fim')?.value || '';
+    const destino = document.getElementById('filtro-destino')?.value || '';
+    const tipo = document.getElementById('filtro-tipo')?.value || '';
     
     let categoria = '';
     const catEl = document.getElementById('filtro-categoria');
     if(catEl) categoria = catEl.value;
 
-    const status = document.getElementById('filtro-status').value;
-    const responsavel = document.getElementById('filtro-responsavel').value.trim().toLowerCase();
+    const status = document.getElementById('filtro-status')?.value || '';
+    const responsavel = document.getElementById('filtro-responsavel')?.value.trim().toLowerCase() || '';
 
     const filtradas = transacoesGlobais.filter(t => {
         const tData = t.dataMovimentacao || (t.data ? t.data.split('T')[0] : '');
@@ -1059,15 +1344,15 @@ window.aplicarFiltrosCaixa = () => {
 };
 
 window.limparFiltrosCaixa = () => {
-    document.getElementById('filtro-busca').value = "";
-    document.getElementById('filtro-data-inicio').value = "";
-    document.getElementById('filtro-data-fim').value = "";
-    document.getElementById('filtro-destino').value = "";
-    document.getElementById('filtro-tipo').value = "";
+    if (document.getElementById('filtro-busca')) document.getElementById('filtro-busca').value = "";
+    if (document.getElementById('filtro-data-inicio')) document.getElementById('filtro-data-inicio').value = "";
+    if (document.getElementById('filtro-data-fim')) document.getElementById('filtro-data-fim').value = "";
+    if (document.getElementById('filtro-destino')) document.getElementById('filtro-destino').value = "";
+    if (document.getElementById('filtro-tipo')) document.getElementById('filtro-tipo').value = "";
     const catEl = document.getElementById('filtro-categoria');
     if(catEl) catEl.value = "";
-    document.getElementById('filtro-status').value = "";
-    document.getElementById('filtro-responsavel').value = "";
+    if (document.getElementById('filtro-status')) document.getElementById('filtro-status').value = "";
+    if (document.getElementById('filtro-responsavel')) document.getElementById('filtro-responsavel').value = "";
     aplicarFiltrosCaixa();
 };
 
@@ -1305,7 +1590,7 @@ window.addLetra = async () => {
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             });
-            limparFormularioLetra();
+            cancelarEdicaoLetra();
         }
 
         if (successEl) {
@@ -1332,6 +1617,21 @@ window.prepararEdicaoLetra = (l, e) => {
         return;
     }
     editandoLetraId = l.id;
+    letrasFormOpen = true;
+    const formContainer = document.getElementById('form-letras-container');
+    if (formContainer) {
+        formContainer.style.display = 'block';
+        formContainer.classList.remove('hidden');
+    }
+    const btnToggle = document.getElementById('btn-toggle-letras-form');
+    if (btnToggle) {
+        btnToggle.setAttribute('aria-expanded', 'true');
+        const span = btnToggle.querySelector('span');
+        const icon = btnToggle.querySelector('i');
+        if (span) span.textContent = 'Fechar formulário';
+        if (icon) icon.className = 'fas fa-times';
+    }
+
     if (document.getElementById('letra-titulo')) document.getElementById('letra-titulo').value = l.titulo || '';
     if (document.getElementById('letra-tom')) document.getElementById('letra-tom').value = l.tom || '';
     if (document.getElementById('letra-situacao')) document.getElementById('letra-situacao').value = l.situacao || '';
@@ -1348,12 +1648,26 @@ window.prepararEdicaoLetra = (l, e) => {
     const saveBtn = document.getElementById('btn-salvar-letra');
     if (saveBtn) saveBtn.textContent = "Atualizar Música";
 
-    const formContainer = document.getElementById('form-letras-container');
     if (formContainer) formContainer.scrollIntoView({ behavior: getScrollBehavior() });
 };
 
 window.cancelarEdicaoLetra = () => {
     editandoLetraId = null;
+    letrasFormOpen = false;
+    const formContainer = document.getElementById('form-letras-container');
+    if (formContainer) {
+        formContainer.style.display = 'none';
+        formContainer.classList.add('hidden');
+    }
+    const btnToggle = document.getElementById('btn-toggle-letras-form');
+    if (btnToggle) {
+        btnToggle.setAttribute('aria-expanded', 'false');
+        const span = btnToggle.querySelector('span');
+        const icon = btnToggle.querySelector('i');
+        if (span) span.textContent = 'Nova música';
+        if (icon) icon.className = 'fas fa-music';
+    }
+
     limparFormularioLetra();
     const cancelBtn = document.getElementById('btn-letra-cancel');
     if (cancelBtn) cancelBtn.classList.add('hidden');
@@ -1928,6 +2242,8 @@ function renderCaixa(transacoes) {
     const totalGeral = saldos.viagem + saldos.gravacao + saldos.rifa;
     const dashSaldo = document.getElementById('dash-saldo-total');
     if (dashSaldo) dashSaldo.innerText = formatarBRL(totalGeral);
+    const caixaSaldoTotal = document.getElementById('saldo-total-geral-caixa');
+    if (caixaSaldoTotal) caixaSaldoTotal.innerText = formatarBRL(totalGeral);
 
     aplicarFiltrosCaixa();
 }
@@ -1943,7 +2259,15 @@ function renderTransacoesFiltradas(filtradas) {
     listExtrato.innerHTML = '';
 
     if(filtradas.length === 0) {
-        listExtrato.innerHTML = `<p class="p-10 text-center text-slate-400 italic text-sm">Nenhuma movimentação encontrada com estes filtros.</p>`;
+        listExtrato.innerHTML = `
+            <div class="py-16 px-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-search text-lg"></i>
+                </div>
+                <p class="text-slate-500 font-bold text-sm">Nenhuma movimentação encontrada</p>
+                <p class="text-slate-400 text-xs mt-1">Tente ajustar os filtros de busca ou período.</p>
+            </div>
+        `;
         return;
     }
 
@@ -1969,64 +2293,77 @@ function renderTransacoesFiltradas(filtradas) {
         const sinal = isIn ? '+' : '';
 
         const itemDiv = document.createElement('div');
-        itemDiv.className = `transaction-item flex flex-col p-4 border-b border-slate-50 hover:bg-slate-50 transition-all ${isCancelled ? 'opacity-60 bg-slate-100' : ''}`;
+        itemDiv.className = `transaction-item flex flex-col p-4 sm:p-5 border-b border-slate-100 hover:bg-slate-50/80 transition-all ${isCancelled ? 'opacity-60 bg-slate-50' : ''}`;
 
         const topDiv = document.createElement('div');
-        topDiv.className = 'flex justify-between items-start w-full';
+        topDiv.className = 'flex justify-between items-start w-full gap-3';
 
         const leftDiv = document.createElement('div');
-        leftDiv.className = 'flex items-center gap-3';
+        leftDiv.className = 'flex items-start sm:items-center gap-3 min-w-0 flex-1';
 
         const iconContainer = document.createElement('div');
-        iconContainer.className = `w-8 h-8 rounded-full flex items-center justify-center ${isIn ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`;
+        iconContainer.className = `w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isCancelled ? 'bg-slate-200 text-slate-500' : (isEstorno ? 'bg-amber-100 text-amber-700' : (isIn ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'))}`;
         
         const icon = document.createElement('i');
-        if (isEstorno) {
-            icon.className = 'fas fa-undo-alt text-[10px]';
+        if (isCancelled) {
+            icon.className = 'fas fa-ban text-xs';
+        } else if (isEstorno) {
+            icon.className = 'fas fa-undo-alt text-xs';
         } else {
-            icon.className = `fas ${isIn ? 'fa-arrow-up' : 'fa-arrow-down'} text-[10px]`;
+            icon.className = `fas ${isIn ? 'fa-arrow-down-left' : 'fa-arrow-up-right'} text-xs`;
         }
         iconContainer.appendChild(icon);
         leftDiv.appendChild(iconContainer);
 
         const textDiv = document.createElement('div');
+        textDiv.className = 'min-w-0 flex-1';
+        
         const h4 = document.createElement('h4');
-        h4.className = `font-bold text-slate-800 text-sm ${isCancelled ? 'line-through' : ''}`;
+        h4.className = `font-bold text-slate-800 text-sm leading-tight break-words ${isCancelled ? 'line-through text-slate-400' : ''}`;
         h4.textContent = t.desc;
         textDiv.appendChild(h4);
 
         const subP = document.createElement('p');
-        subP.className = 'text-[9px] text-slate-400 font-bold uppercase';
+        subP.className = 'text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-1 flex flex-wrap items-center gap-1.5';
         
         let dateArr = dataVis.split('-');
         let dataFmt = dateArr.length === 3 ? `${dateArr[2]}/${dateArr[1]}/${dateArr[0]}` : dataVis;
-        subP.textContent = `${destinoFinal} • ${dataFmt} • ${t.categoria || 'Sem categoria'}`;
+        
+        const destinoBadge = document.createElement('span');
+        destinoBadge.className = 'px-1.5 py-0.5 rounded bg-slate-100 text-slate-600';
+        destinoBadge.textContent = destinoFinal.toUpperCase();
+        
+        const infoSpan = document.createElement('span');
+        infoSpan.textContent = `• ${dataFmt} • ${t.categoria || 'Sem categoria'}`;
+        
+        subP.appendChild(destinoBadge);
+        subP.appendChild(infoSpan);
         textDiv.appendChild(subP);
         leftDiv.appendChild(textDiv);
 
         topDiv.appendChild(leftDiv);
 
         const rightDiv = document.createElement('div');
-        rightDiv.className = 'flex flex-col items-end gap-1';
+        rightDiv.className = 'flex flex-col items-end gap-1 flex-shrink-0';
 
         const valorSpan = document.createElement('span');
-        valorSpan.className = `font-black text-sm ${isCancelled ? 'text-slate-400 line-through' : (isIn ? 'text-emerald-600' : 'text-red-600')}`;
+        valorSpan.className = `font-black text-sm sm:text-base tabular-nums ${isCancelled ? 'text-slate-400 line-through' : (isIn ? 'text-emerald-600' : 'text-red-600')}`;
         valorSpan.textContent = `${sinal} ${formatarBRL(valorNumerico)}`;
         rightDiv.appendChild(valorSpan);
 
         if (isCancelled) {
             const badge = document.createElement('span');
-            badge.className = 'text-[9px] font-black uppercase text-red-500 bg-red-100 px-2 py-0.5 rounded-full';
+            badge.className = 'text-[9px] font-black uppercase text-red-600 bg-red-100 px-2 py-0.5 rounded-full';
             badge.textContent = 'Cancelado';
             rightDiv.appendChild(badge);
         } else if (isEstornado) {
             const badge = document.createElement('span');
-            badge.className = 'text-[9px] font-black uppercase text-amber-500 bg-amber-100 px-2 py-0.5 rounded-full';
+            badge.className = 'text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full';
             badge.textContent = 'Estornado';
             rightDiv.appendChild(badge);
         } else if (isEstorno) {
             const badge = document.createElement('span');
-            badge.className = 'text-[9px] font-black uppercase text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full';
+            badge.className = 'text-[9px] font-black uppercase text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full';
             badge.textContent = 'Estorno';
             rightDiv.appendChild(badge);
         }
@@ -2035,39 +2372,40 @@ function renderTransacoesFiltradas(filtradas) {
         itemDiv.appendChild(topDiv);
 
         const detailsDiv = document.createElement('div');
-        detailsDiv.className = 'mt-3 pl-11 text-xs text-slate-500 hidden grid-cols-1 sm:grid-cols-2 gap-2 w-full';
+        detailsDiv.className = 'mt-3 pl-0 sm:pl-12 text-xs text-slate-500 hidden grid-cols-1 sm:grid-cols-2 gap-2 w-full pt-2 border-t border-slate-100';
         
         const rName = t.responsavel || 'Não informado';
         const fp = t.formaPagamento || 'Não informada';
         
         const col1 = document.createElement('div');
-        col1.textContent = `Resp: ${rName} | Pgt: ${fp}`;
+        col1.innerHTML = `<span class="font-bold text-slate-600">Resp:</span> ${rName} &nbsp;|&nbsp; <span class="font-bold text-slate-600">Pagamento:</span> ${fp}`;
         detailsDiv.appendChild(col1);
 
         if (t.observacao || isCancelled || isEstorno) {
             const col2 = document.createElement('div');
-            col2.className = 'italic opacity-80';
+            col2.className = 'italic text-slate-600';
             if (isCancelled && t.cancelReason) col2.textContent = `Motivo cancelamento: ${t.cancelReason}`;
             else if (isEstorno && t.observacao) col2.textContent = `Motivo estorno: ${t.observacao}`;
-            else col2.textContent = t.observacao;
+            else col2.textContent = `Obs: ${t.observacao}`;
             detailsDiv.appendChild(col2);
         }
 
         const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'mt-3 pl-11 flex gap-3 w-full border-t border-slate-100 pt-3';
+        actionsDiv.className = 'mt-3 pl-0 sm:pl-12 flex flex-wrap items-center gap-3 w-full border-t border-slate-100 pt-2.5';
         
         const btnToggle = document.createElement('button');
-        btnToggle.className = 'text-xs text-slate-500 hover:text-gold font-bold';
-        btnToggle.textContent = 'Ver detalhes';
+        btnToggle.type = 'button';
+        btnToggle.className = 'text-xs text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-slate-100 transition-colors';
+        btnToggle.innerHTML = '<i class="fas fa-info-circle text-[11px]"></i> Ver detalhes';
         btnToggle.onclick = () => {
             if(detailsDiv.classList.contains('hidden')) {
                 detailsDiv.classList.remove('hidden');
                 detailsDiv.classList.add('grid');
-                btnToggle.textContent = 'Ocultar detalhes';
+                btnToggle.innerHTML = '<i class="fas fa-chevron-up text-[11px]"></i> Ocultar detalhes';
             } else {
                 detailsDiv.classList.add('hidden');
                 detailsDiv.classList.remove('grid');
-                btnToggle.textContent = 'Ver detalhes';
+                btnToggle.innerHTML = '<i class="fas fa-info-circle text-[11px]"></i> Ver detalhes';
             }
         };
         actionsDiv.appendChild(btnToggle);
@@ -2077,21 +2415,23 @@ function renderTransacoesFiltradas(filtradas) {
             btnLink.href = t.comprovanteUrl;
             btnLink.target = '_blank';
             btnLink.rel = 'noopener noreferrer';
-            btnLink.className = 'text-xs text-emerald-600 hover:text-emerald-700 font-bold';
-            btnLink.innerHTML = '<i class="fas fa-external-link-alt"></i> Comprovante';
+            btnLink.className = 'text-xs text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1.5 py-1 px-2 rounded-lg hover:bg-emerald-50 transition-colors';
+            btnLink.innerHTML = '<i class="fas fa-external-link-alt text-[10px]"></i> Comprovante';
             actionsDiv.appendChild(btnLink);
         }
 
         if (!isCancelled && !isEstorno && !isEstornado) {
             const btnEstornar = document.createElement('button');
-            btnEstornar.className = 'text-xs text-amber-500 hover:text-amber-700 font-bold ml-auto';
-            btnEstornar.textContent = 'Estornar';
+            btnEstornar.type = 'button';
+            btnEstornar.className = 'text-xs text-amber-600 hover:text-amber-800 font-bold ml-auto py-1 px-2.5 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1';
+            btnEstornar.innerHTML = '<i class="fas fa-undo-alt text-[10px]"></i> Estornar';
             btnEstornar.onclick = () => abrirModalEstorno(t.id);
             actionsDiv.appendChild(btnEstornar);
 
             const btnCancelar = document.createElement('button');
-            btnCancelar.className = 'text-xs text-red-400 hover:text-red-600 font-bold';
-            btnCancelar.textContent = 'Cancelar';
+            btnCancelar.type = 'button';
+            btnCancelar.className = 'text-xs text-red-500 hover:text-red-700 font-bold py-1 px-2.5 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-1';
+            btnCancelar.innerHTML = '<i class="fas fa-ban text-[10px]"></i> Cancelar';
             btnCancelar.onclick = () => abrirModalCancelar(t.id);
             actionsDiv.appendChild(btnCancelar);
         }
@@ -2292,76 +2632,6 @@ window.confirmarEstorno = async () => {
         btn.innerText = 'Confirmar Estorno';
     }
 };
-
-document.addEventListener('keydown', (e) => {
-    // Focus trapping para modais de repertório abertos
-    const modalLetras = document.getElementById('lyric-modal');
-    const isModalLetrasOpen = modalLetras && (modalLetras.style.display === 'block' || !modalLetras.classList.contains('hidden'));
-
-    const modalLetraArquivar = document.getElementById('modal-letra-arquivar');
-    const isModalLetraArquivarOpen = modalLetraArquivar && (modalLetraArquivar.style.display === 'block' || !modalLetraArquivar.classList.contains('hidden'));
-
-    const modalLetraRestaurar = document.getElementById('modal-letra-restaurar');
-    const isModalLetraRestaurarOpen = modalLetraRestaurar && (modalLetraRestaurar.style.display === 'block' || !modalLetraRestaurar.classList.contains('hidden'));
-
-    const modalGmailLimpar = document.getElementById('modal-gmail-limpar-cache');
-    const isModalGmailLimparOpen = modalGmailLimpar && (modalGmailLimpar.style.display === 'block' || !modalGmailLimpar.classList.contains('hidden'));
-
-    if (e.key === 'Tab') {
-        if (isModalLetrasOpen) {
-            trapFocusInModal(e, document.getElementById('presentation-window'));
-        } else if (isModalLetraArquivarOpen) {
-            trapFocusInModal(e, modalLetraArquivar.querySelector('.modal-window'));
-        } else if (isModalLetraRestaurarOpen) {
-            trapFocusInModal(e, modalLetraRestaurar.querySelector('.modal-window'));
-        } else if (isModalGmailLimparOpen) {
-            trapFocusInModal(e, modalGmailLimpar.querySelector('.modal-window'));
-        }
-    }
-
-    if (e.key === 'Escape') {
-        if (isModalGmailLimparOpen) {
-            window.fecharModalLimparCacheGmail(null, false);
-            return;
-        }
-        const modalCancelar = document.getElementById('modal-cancelar');
-        if (modalCancelar && modalCancelar.style.display === 'block') {
-            window.fecharModalCancelar();
-            return;
-        }
-        const modalEstorno = document.getElementById('modal-estorno');
-        if (modalEstorno && modalEstorno.style.display === 'block') {
-            window.fecharModalEstorno();
-            return;
-        }
-        const modalAgendaCancelar = document.getElementById('modal-agenda-cancelar');
-        if (modalAgendaCancelar && !modalAgendaCancelar.classList.contains('hidden')) {
-            window.fecharModalAgendaCancelar();
-            return;
-        }
-        if (isModalLetraRestaurarOpen) {
-            window.fecharModalRestaurarLetra(null, true);
-            return;
-        }
-        if (isModalLetraArquivarOpen) {
-            window.fecharModalArquivarLetra(null, true);
-            return;
-        }
-        if (isModalLetrasOpen) {
-            if (document.fullscreenElement) {
-                // Sai de tela cheia sem fechar o modal
-                document.exitFullscreen().catch(() => {});
-            } else {
-                window.closeModal();
-            }
-            return;
-        }
-        const modalSocial = document.getElementById('social-modal');
-        if (modalSocial && modalSocial.style.display === 'block') {
-            modalSocial.style.display = 'none';
-        }
-    }
-});
 
 document.addEventListener('fullscreenchange', () => {
     const fsBtn = document.getElementById('btn-fullscreen-presentation');
@@ -2763,7 +3033,7 @@ window.closeModal = () => {
 };
 
 window.ajustarFonteApresentacao = (delta) => {
-    tamanhoFonteApresentacao = Math.max(12, Math.min(42, tamanhoFonteApresentacao + delta));
+    tamanhoFonteApresentacao = Math.max(16, Math.min(42, tamanhoFonteApresentacao + delta));
     aplicarEstilosApresentacao();
 };
 
@@ -2801,6 +3071,13 @@ function aplicarEstilosApresentacao() {
     const modalCorpo = document.getElementById('modal-corpo');
     if (modalCorpo) {
         modalCorpo.style.fontSize = `${tamanhoFonteApresentacao}px`;
+    }
+
+    const percentEl = document.getElementById('presentation-font-percent');
+    if (percentEl) {
+        const pct = Math.round((tamanhoFonteApresentacao / 18) * 100);
+        percentEl.textContent = `${pct}%`;
+        percentEl.setAttribute('aria-label', `Tamanho padrão (${pct}%)`);
     }
 
     const modalOverlay = document.getElementById('lyric-modal');
@@ -3105,12 +3382,7 @@ window.addAgenda = async () => {
             };
             await addDoc(collection(db, "agenda"), payload);
             
-            limparFormularioAgenda();
-            if (successEl) {
-                successEl.innerText = "Compromisso agendado com sucesso!";
-                successEl.classList.remove('hidden');
-                setTimeout(() => successEl.classList.add('hidden'), 3000);
-            }
+            cancelarEdicaoAgenda();
         }
     } catch (e) {
         console.error("Erro ao salvar agenda:", e);
@@ -3155,6 +3427,21 @@ window.editarAgenda = (id) => {
     }
 
     eventoAtualEdicao = id;
+    agendaFormOpen = true;
+    const formContainer = document.getElementById('agenda-form-container');
+    if (formContainer) {
+        formContainer.style.display = 'block';
+        formContainer.classList.remove('hidden');
+    }
+    const btnToggle = document.getElementById('btn-toggle-agenda-form');
+    if (btnToggle) {
+        btnToggle.setAttribute('aria-expanded', 'true');
+        const span = btnToggle.querySelector('span');
+        const icon = btnToggle.querySelector('i');
+        if (span) span.textContent = 'Fechar formulário';
+        if (icon) icon.className = 'fas fa-times';
+    }
+
     const titleEl = document.getElementById('agenda-form-title');
     if (titleEl) titleEl.innerText = "Editando Compromisso";
     
@@ -3170,12 +3457,26 @@ window.editarAgenda = (id) => {
     if (document.getElementById('agenda-local')) document.getElementById('agenda-local').value = evento.local || '';
     if (document.getElementById('agenda-maps')) document.getElementById('agenda-maps').value = evento.mapsUrl || '';
     
-    const container = document.getElementById('agenda-form-container');
-    if (container) container.scrollIntoView({ behavior: 'smooth' });
+    if (formContainer) formContainer.scrollIntoView({ behavior: 'smooth' });
 };
 
 window.cancelarEdicaoAgenda = () => {
     eventoAtualEdicao = null;
+    agendaFormOpen = false;
+    const formContainer = document.getElementById('agenda-form-container');
+    if (formContainer) {
+        formContainer.style.display = 'none';
+        formContainer.classList.add('hidden');
+    }
+    const btnToggle = document.getElementById('btn-toggle-agenda-form');
+    if (btnToggle) {
+        btnToggle.setAttribute('aria-expanded', 'false');
+        const span = btnToggle.querySelector('span');
+        const icon = btnToggle.querySelector('i');
+        if (span) span.textContent = 'Novo compromisso';
+        if (icon) icon.className = 'fas fa-plus';
+    }
+
     const titleEl = document.getElementById('agenda-form-title');
     if (titleEl) titleEl.innerText = "Agendar Novo Compromisso";
     
@@ -3408,3 +3709,212 @@ window.shareAgendaWhatsApp = () => {
     
     window.open("https://wa.me/?text=" + encodeURIComponent(txt.trim()), '_blank', 'noopener,noreferrer');
 };
+
+// ==========================================
+// ETAPA 10B — CONTROLE DE FORMULÁRIOS E FILTROS RECOLHÍVEIS
+// ==========================================
+let agendaFormOpen = false;
+let agendaFiltersOpen = false;
+let letrasFormOpen = false;
+let letrasFiltersOpen = false;
+
+window.toggleAgendaForm = () => {
+    const formContainer = document.getElementById('agenda-form-container');
+    const btn = document.getElementById('btn-toggle-agenda-form');
+    if (!formContainer || !btn) return;
+
+    if (agendaFormOpen) {
+        if (eventoAtualEdicao) {
+            if (!confirm("Existem informações em edição. Deseja descartar as alterações não salvas?")) {
+                return;
+            }
+            window.cancelarEdicaoAgenda();
+            return;
+        }
+
+        const desc = document.getElementById('agenda-desc')?.value.trim() || '';
+        const data = document.getElementById('agenda-data')?.value.trim() || '';
+        const hora = document.getElementById('agenda-hora-inicio')?.value.trim() || '';
+        const local = document.getElementById('agenda-local')?.value.trim() || '';
+        const maps = document.getElementById('agenda-maps')?.value.trim() || '';
+
+        if (desc || data || hora || local || maps) {
+            if (!confirm("Existem informações preenchidas no formulário. Deseja descartar as alterações não salvas?")) {
+                return;
+            }
+        }
+
+        agendaFormOpen = false;
+        formContainer.style.display = 'none';
+        formContainer.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (span) span.textContent = 'Novo compromisso';
+        if (icon) icon.className = 'fas fa-plus';
+
+        window.limparFormularioAgenda();
+    } else {
+        if (eventoAtualEdicao !== null) {
+            window.cancelarEdicaoAgenda();
+        }
+        agendaFormOpen = true;
+        formContainer.style.display = 'block';
+        formContainer.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (span) span.textContent = 'Fechar formulário';
+        if (icon) icon.className = 'fas fa-times';
+
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        formContainer.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
+        setTimeout(() => {
+            const firstInput = document.getElementById('agenda-desc');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
+};
+
+window.toggleAgendaFilters = () => {
+    const panel = document.getElementById('agenda-filters-panel');
+    const btn = document.getElementById('btn-toggle-agenda-filters');
+    if (!panel || !btn) return;
+
+    agendaFiltersOpen = !agendaFiltersOpen;
+    if (agendaFiltersOpen) {
+        panel.style.display = 'block';
+        panel.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+    } else {
+        panel.style.display = 'none';
+        panel.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+    }
+};
+
+window.toggleLetrasForm = () => {
+    const formContainer = document.getElementById('form-letras-container');
+    const btn = document.getElementById('btn-toggle-letras-form');
+    if (!formContainer || !btn) return;
+
+    if (letrasFormOpen) {
+        if (editandoLetraId) {
+            if (!confirm("Existem informações em edição. Deseja descartar as alterações não salvas?")) {
+                return;
+            }
+            window.cancelarEdicaoLetra();
+            return;
+        }
+
+        const titulo = document.getElementById('letra-titulo')?.value.trim() || '';
+        const tom = document.getElementById('letra-tom')?.value.trim() || '';
+        const situacao = document.getElementById('letra-situacao')?.value.trim() || '';
+        const drive = document.getElementById('letra-drive')?.value.trim() || '';
+        const texto = document.getElementById('letra-corpo-texto')?.value.trim() || '';
+        const obs = document.getElementById('letra-obs')?.value.trim() || '';
+
+        if (titulo || tom || situacao || drive || texto || obs) {
+            if (!confirm("Existem informações preenchidas no formulário. Deseja descartar as alterações não salvas?")) {
+                return;
+            }
+        }
+
+        letrasFormOpen = false;
+        formContainer.style.display = 'none';
+        formContainer.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (span) span.textContent = 'Nova música';
+        if (icon) icon.className = 'fas fa-music';
+
+        window.limparFormularioLetra();
+    } else {
+        if (editandoLetraId !== null) {
+            window.cancelarEdicaoLetra();
+        }
+        letrasFormOpen = true;
+        formContainer.style.display = 'block';
+        formContainer.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        const span = btn.querySelector('span');
+        const icon = btn.querySelector('i');
+        if (span) span.textContent = 'Fechar formulário';
+        if (icon) icon.className = 'fas fa-times';
+
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        formContainer.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
+        setTimeout(() => {
+            const firstInput = document.getElementById('letra-titulo');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
+};
+
+window.toggleLetrasMoreFilters = () => {
+    const panel = document.getElementById('letras-more-filters-panel');
+    const btn = document.getElementById('btn-toggle-letras-more-filters');
+    if (!panel || !btn) return;
+
+    letrasFiltersOpen = !letrasFiltersOpen;
+    if (letrasFiltersOpen) {
+        panel.style.display = 'block';
+        panel.classList.remove('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+    } else {
+        panel.style.display = 'none';
+        panel.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+    }
+};
+
+function atualizarContadorFiltrosAgenda() {
+    const busca = document.getElementById('filtro-agenda-busca')?.value.trim() || '';
+    const inicio = document.getElementById('filtro-agenda-data-inicio')?.value || '';
+    const fim = document.getElementById('filtro-agenda-data-fim')?.value || '';
+    const status = document.getElementById('filtro-agenda-status')?.value || '';
+
+    let ativas = 0;
+    if (busca) ativas++;
+    if (inicio) ativas++;
+    if (fim) ativas++;
+    if (status) ativas++;
+
+    const btn = document.getElementById('btn-toggle-agenda-filters');
+    if (btn) {
+        const span = btn.querySelector('span');
+        if (span) {
+            span.textContent = ativas > 0 ? `Filtrar (${ativas})` : 'Filtrar';
+        }
+        if (ativas > 0) {
+            btn.classList.add('border-gold', 'bg-amber-50', 'text-amber-800');
+        } else {
+            btn.classList.remove('border-gold', 'bg-amber-50', 'text-amber-800');
+        }
+    }
+}
+
+function atualizarContadorFiltrosLetras() {
+    const situacao = document.getElementById('filtro-letras-situacao')?.value || '';
+    const tom = document.getElementById('filtro-letras-tom')?.value || '';
+    const status = document.getElementById('filtro-letras-status')?.value || 'ativas';
+
+    let ativas = 0;
+    if (situacao) ativas++;
+    if (tom) ativas++;
+    if (status && status !== 'ativas') ativas++;
+
+    const btnText = document.getElementById('letras-filters-btn-text');
+    const btn = document.getElementById('btn-toggle-letras-more-filters');
+    if (btnText) {
+        btnText.textContent = ativas > 0 ? `Mais filtros (${ativas})` : 'Mais filtros';
+    }
+    if (btn) {
+        if (ativas > 0) {
+            btn.classList.add('border-gold', 'bg-amber-50', 'text-amber-800');
+        } else {
+            btn.classList.remove('border-gold', 'bg-amber-50', 'text-amber-800');
+        }
+    }
+}
