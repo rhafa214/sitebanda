@@ -246,7 +246,20 @@ input::placeholder { color: #94a3b8; font-weight: 400; }
     
     /* MODAL CELULAR */
     .modal-overlay { overflow-y: auto; display: none; align-items: center; justify-content: center; }
-    #presentation-window { width: 100% !important; height: 100dvh !important; max-width: none !important; margin: 0 !important; border-radius: 0 !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+    #presentation-window { 
+        width: 100% !important; 
+        height: 100dvh !important; 
+        max-width: none !important; 
+        margin: 0 !important; 
+        border-radius: 0 !important; 
+        display: flex !important; 
+        flex-direction: column !important; 
+        overflow: hidden !important; 
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
     #modal-cancelar .modal-window,
     #modal-estorno .modal-window,
     #modal-agenda-cancelar .modal-window,
@@ -261,17 +274,106 @@ input::placeholder { color: #94a3b8; font-weight: 400; }
         display: block !important;
         overflow-y: auto !important;
     }
-    #presentation-header { padding: 12px 16px !important; flex-shrink: 0 !important; }
-    #presentation-header h2 { font-size: 1.15rem !important; }
-    #presentation-header .flex.items-center.gap-2.flex-wrap { gap: 6px !important; }
-    #presentation-header button, #presentation-header a { min-width: 44px !important; min-height: 44px !important; width: 44px !important; height: 44px !important; border-radius: 12px !important; font-size: 0.95rem !important; }
-    #presentation-header button#btn-close-presentation { width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; flex-shrink: 0 !important; }
-    #presentation-header a#modal-drive-btn { width: auto !important; padding: 0 12px !important; }
-    .modal-lyrics-body { flex: 1 !important; overflow-y: auto !important; overscroll-behavior: contain !important; -webkit-overflow-scrolling: touch !important; min-height: 0 !important; padding: 20px 18px 120px 18px !important; background: #fff; }
-    .modal-lyrics-body pre#modal-corpo { line-height: 1.7 !important; white-space: pre-wrap !important; overflow-wrap: break-word !important; word-break: break-word !important; }
+    #presentation-header { 
+        padding: 12px 16px 10px 16px !important; 
+        flex-shrink: 0 !important; 
+        gap: 8px !important;
+    }
+    #presentation-header h2 { 
+        font-size: 1.15rem !important; 
+        line-height: 1.25 !important;
+    }
+    .modal-lyrics-body { 
+        flex: 1 !important; 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important;
+        overscroll-behavior: contain !important; 
+        -webkit-overflow-scrolling: touch !important; 
+        min-height: 0 !important; 
+        padding: 16px 18px 40px 18px !important; 
+        background: #fff; 
+    }
 
     /* OUTROS AJUSTES */
     .balance-text { font-size: 2.2rem !important; }
+}
+
+/* ==========================================
+   MODO APRESENTAÇÃO DE MÚSICA (REPERTÓRIO)
+   ========================================== */
+.presentation-ctrl-btn {
+    min-width: 44px;
+    min-height: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    touch-action: manipulation;
+    font-weight: 700;
+}
+.presentation-ctrl-btn:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+.presentation-ctrl-btn:active {
+    transform: scale(0.96);
+}
+.presentation-percent-btn {
+    min-width: 48px;
+    padding: 0 8px;
+    font-variant-numeric: tabular-nums;
+}
+.btn-close-modal {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #fee2e2;
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+.btn-close-modal:hover {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.presentation-badge-tom {
+    background-color: #000000 !important;
+    color: #D4AF37 !important;
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.3px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+}
+#modal-corpo {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 18px;
+    line-height: 1.6;
+    letter-spacing: 0;
+    word-spacing: normal;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    tab-size: 4;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    display: block;
+}
+#modal-obs-container {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* MODO APRESENTAÇÃO DE MÚSICA - TEMA ESCURO */
@@ -282,6 +384,9 @@ input::placeholder { color: #94a3b8; font-weight: 400; }
 .theme-dark-presentation #presentation-header {
     background-color: #020617 !important;
     border-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+.theme-dark-presentation #presentation-header h2 {
     color: #f8fafc !important;
 }
 .theme-dark-presentation #presentation-body {
@@ -296,12 +401,37 @@ input::placeholder { color: #94a3b8; font-weight: 400; }
     border-color: #334155 !important;
     color: #f8fafc !important;
 }
-.theme-dark-presentation button {
+.theme-dark-presentation .presentation-ctrl-btn {
+    background-color: #1e293b !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
 }
-.theme-dark-presentation button:hover {
-    background-color: #1e293b !important;
+.theme-dark-presentation .presentation-ctrl-btn:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+.theme-dark-presentation .btn-close-modal {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    border-color: rgba(220, 38, 38, 0.4) !important;
+    color: #f87171 !important;
+}
+.theme-dark-presentation .btn-close-modal:hover {
+    background-color: rgba(220, 38, 38, 0.35) !important;
+    color: #ffffff !important;
+}
+.theme-dark-presentation .presentation-drive-btn {
+    background-color: rgba(37, 99, 235, 0.2) !important;
+    border-color: rgba(37, 99, 235, 0.4) !important;
+    color: #60a5fa !important;
+}
+.theme-dark-presentation .presentation-drive-btn:hover {
+    background-color: rgba(37, 99, 235, 0.35) !important;
+    color: #93c5fd !important;
+}
+.theme-dark-presentation .presentation-badge-tom {
+    background-color: #000000 !important;
+    color: #D4AF37 !important;
+    border: 1px solid rgba(212, 175, 55, 0.6) !important;
 }
 
 /* ACESSIBILIDADE - PREFERS REDUCED MOTION */

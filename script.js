@@ -335,7 +335,7 @@ document.addEventListener('keydown', (e) => {
     const isModalAgendaCancelarOpen = modalAgendaCancelar && !modalAgendaCancelar.classList.contains('hidden');
 
     const modalSocial = document.getElementById('social-modal');
-    const isModalSocialOpen = modalSocial && modalSocial.style.display === 'block';
+    const isModalSocialOpen = modalSocial && (modalSocial.style.display === 'flex' || modalSocial.style.display === 'block' || !modalSocial.classList.contains('hidden'));
 
     if (e.key === 'Tab') {
         if (isModalLetrasOpen) {
@@ -346,6 +346,8 @@ document.addEventListener('keydown', (e) => {
             trapFocusInModal(e, modalLetraRestaurar.querySelector('.modal-window'));
         } else if (isModalGmailLimparOpen) {
             trapFocusInModal(e, modalGmailLimpar.querySelector('.modal-window'));
+        } else if (isModalSocialOpen) {
+            trapFocusInModal(e, modalSocial.querySelector('.modal-window'));
         }
         return;
     }
@@ -384,7 +386,7 @@ document.addEventListener('keydown', (e) => {
             return;
         }
         if (isModalSocialOpen) {
-            modalSocial.style.display = 'none';
+            window.fecharModalSocial(null, true);
             return;
         }
 
@@ -495,17 +497,37 @@ function iniciarSincronizacao() {
 
     unsubscribeFunctions.push(
         onSnapshot(doc(db, "config", "social"), (snapshot) => {
-        if (snapshot.exists()) {
-            const d = snapshot.data();
-            const igEl = document.getElementById('count-instagram');
-            const ytEl = document.getElementById('count-youtube');
-            const spEl = document.getElementById('count-spotify');
-            
-            if(igEl) igEl.innerText = Number(d.ig || 0).toLocaleString();
-            if(ytEl) ytEl.innerText = Number(d.yt || 0).toLocaleString();
-            if(spEl) spEl.innerText = Number(d.sp || 0).toLocaleString();
-        }
-    }, (error) => console.error("Erro sincronizando social:", error))
+            if (snapshot.exists()) {
+                const d = snapshot.data();
+                const igEl = document.getElementById('count-instagram');
+                const ytEl = document.getElementById('count-youtube');
+                const spEl = document.getElementById('count-spotify');
+                const updatedEl = document.getElementById('social-last-updated');
+                
+                if (igEl && typeof d.ig === 'number') igEl.innerText = Number(d.ig || 0).toLocaleString('pt-BR');
+                if (ytEl && typeof d.yt === 'number') ytEl.innerText = Number(d.yt || 0).toLocaleString('pt-BR');
+                if (spEl && typeof d.sp === 'number') spEl.innerText = Number(d.sp || 0).toLocaleString('pt-BR');
+
+                if (updatedEl) {
+                    const ts = d.updatedAt || d.instagramUpdatedAt || d.youtubeUpdatedAt || d.spotifyUpdatedAt;
+                    if (ts) {
+                        try {
+                            const dateObj = ts.toDate ? ts.toDate() : new Date(ts);
+                            if (!isNaN(dateObj.getTime())) {
+                                const dataStr = dateObj.toLocaleDateString('pt-BR');
+                                updatedEl.textContent = `Impacto da Missão • Atualizado em ${dataStr}`;
+                            } else {
+                                updatedEl.textContent = 'Impacto da Missão';
+                            }
+                        } catch {
+                            updatedEl.textContent = 'Impacto da Missão';
+                        }
+                    } else {
+                        updatedEl.textContent = 'Impacto da Missão';
+                    }
+                }
+            }
+        }, (error) => console.error("Erro sincronizando social:", error))
     );
 }
 
@@ -1984,12 +2006,180 @@ window.confirmarRestauracaoLetra = async () => {
     }
 };
 
+let isSavingSocial = false;
+let lastSocialTriggerBtn = null;
+let initialSocialValues = { ig: '', yt: '', sp: '', resp: '' };
+
+window.prepararEdicaoSocial = (triggerEl) => {
+    const igCountEl = document.getElementById('count-instagram');
+    const ytCountEl = document.getElementById('count-youtube');
+    const spCountEl = document.getElementById('count-spotify');
+
+    const igInput = document.getElementById('input-ig');
+    const ytInput = document.getElementById('input-yt');
+    const spInput = document.getElementById('input-sp');
+    const respInput = document.getElementById('input-social-resp');
+    const errEl = document.getElementById('social-modal-error');
+
+    const currentIg = igCountEl ? igCountEl.innerText.replace(/\./g, '').replace(/,/g, '').trim() : '';
+    const currentYt = ytCountEl ? ytCountEl.innerText.replace(/\./g, '').replace(/,/g, '').trim() : '';
+    const currentSp = spCountEl ? spCountEl.innerText.replace(/\./g, '').replace(/,/g, '').trim() : '';
+
+    if (igInput) igInput.value = currentIg || '0';
+    if (ytInput) ytInput.value = currentYt || '0';
+    if (spInput) spInput.value = currentSp || '0';
+    if (respInput) respInput.value = '';
+
+    initialSocialValues = {
+        ig: igInput ? igInput.value : '',
+        yt: ytInput ? ytInput.value : '',
+        sp: spInput ? spInput.value : '',
+        resp: '',
+    };
+
+    if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.add('hidden');
+    }
+
+    lastSocialTriggerBtn = triggerEl || document.getElementById('btn-edit-social');
+
+    const modal = document.getElementById('social-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        if (igInput) igInput.focus();
+    }
+};
+
+window.fecharModalSocial = (e, checkDirty = false) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+
+    const igInput = document.getElementById('input-ig');
+    const ytInput = document.getElementById('input-yt');
+    const spInput = document.getElementById('input-sp');
+    const respInput = document.getElementById('input-social-resp');
+
+    if (checkDirty) {
+        const isDirty =
+            (igInput && igInput.value !== initialSocialValues.ig) ||
+            (ytInput && ytInput.value !== initialSocialValues.yt) ||
+            (spInput && spInput.value !== initialSocialValues.sp) ||
+            (respInput && respInput.value.trim() !== '');
+
+        if (isDirty) {
+            const confirmDiscard = confirm("Descartar as alterações não salvas?");
+            if (!confirmDiscard) return;
+        }
+    }
+
+    const modal = document.getElementById('social-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+
+    const errEl = document.getElementById('social-modal-error');
+    if (errEl) errEl.classList.add('hidden');
+
+    if (lastSocialTriggerBtn && typeof lastSocialTriggerBtn.focus === 'function') {
+        lastSocialTriggerBtn.focus();
+    }
+};
+
 window.saveSocialStats = async () => {
-    const ig = document.getElementById('input-ig').value;
-    const yt = document.getElementById('input-yt').value;
-    const sp = document.getElementById('input-sp').value;
-    await setDoc(doc(db, "config", "social"), { ig: ig || 0, yt: yt || 0, sp: sp || 0 });
-    document.getElementById('social-modal').style.display = 'none';
+    if (isSavingSocial) return;
+
+    const igInput = document.getElementById('input-ig');
+    const ytInput = document.getElementById('input-yt');
+    const spInput = document.getElementById('input-sp');
+    const respInput = document.getElementById('input-social-resp');
+    const errEl = document.getElementById('social-modal-error');
+    const btn = document.getElementById('btn-save-social');
+
+    if (!igInput || !ytInput || !spInput || !respInput) return;
+
+    if (!auth.currentUser) {
+        alert("Você precisa estar autenticado para salvar.");
+        return;
+    }
+
+    const igVal = igInput.value.trim();
+    const ytVal = ytInput.value.trim();
+    const spVal = spInput.value.trim();
+    const respVal = respInput.value.trim();
+
+    const igNum = Number(igVal);
+    const ytNum = Number(ytVal);
+    const spNum = Number(spVal);
+
+    if (igVal === '' || isNaN(igNum) || !Number.isInteger(igNum) || igNum < 0) {
+        if (errEl) {
+            errEl.textContent = "Informe um número inteiro válido e não negativo para os seguidores do Instagram.";
+            errEl.classList.remove('hidden');
+        }
+        igInput.focus();
+        return;
+    }
+
+    if (ytVal === '' || isNaN(ytNum) || !Number.isInteger(ytNum) || ytNum < 0) {
+        if (errEl) {
+            errEl.textContent = "Informe um número inteiro válido e não negativo para os inscritos do YouTube.";
+            errEl.classList.remove('hidden');
+        }
+        ytInput.focus();
+        return;
+    }
+
+    if (spVal === '' || isNaN(spNum) || !Number.isInteger(spNum) || spNum < 0) {
+        if (errEl) {
+            errEl.textContent = "Informe um número inteiro válido e não negativo para os ouvintes do Spotify.";
+            errEl.classList.remove('hidden');
+        }
+        spInput.focus();
+        return;
+    }
+
+    if (!respVal) {
+        if (errEl) {
+            errEl.textContent = "Informe o responsável pela atualização.";
+            errEl.classList.remove('hidden');
+        }
+        respInput.focus();
+        return;
+    }
+
+    isSavingSocial = true;
+    if (errEl) errEl.classList.add('hidden');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Salvando...</span>';
+    }
+
+    try {
+        await setDoc(doc(db, "config", "social"), {
+            ig: igNum,
+            yt: ytNum,
+            sp: spNum,
+            updatedAt: serverTimestamp(),
+            updatedBy: respVal,
+            responsavel: respVal,
+        }, { merge: true });
+
+        window.fecharModalSocial(null, false);
+    } catch (err) {
+        console.error("Erro ao salvar dados de alcance social:", err.message || err);
+        if (errEl) {
+            errEl.textContent = "Erro ao salvar os números. Verifique suas permissões e tente novamente.";
+            errEl.classList.remove('hidden');
+        }
+    } finally {
+        isSavingSocial = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> <span>Salvar Números</span>';
+        }
+    }
 };
 
 window.deleteItem = async (col, id, e) => {
@@ -1999,13 +2189,6 @@ window.deleteItem = async (col, id, e) => {
     }
     if(e) e.stopPropagation();
     if(confirm("Excluir permanentemente?")) await deleteDoc(doc(db, col, id));
-};
-
-window.prepararEdicaoSocial = () => {
-    document.getElementById('input-ig').value = document.getElementById('count-instagram').innerText.replace(/\./g, '').replace(/,/g, '');
-    document.getElementById('input-yt').value = document.getElementById('count-youtube').innerText.replace(/\./g, '').replace(/,/g, '');
-    document.getElementById('input-sp').value = document.getElementById('count-spotify').innerText.replace(/\./g, '').replace(/,/g, '');
-    document.getElementById('social-modal').style.display = 'block';
 };
 
 // ==========================================
