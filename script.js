@@ -109,6 +109,7 @@ onAuthStateChanged(auth, (user) => {
         if(btn) btn.disabled = false;
         if(spinner) spinner.classList.add('hidden');
         if(text) text.innerText = 'Entrar na Missão';
+        isAuthenticating = false;
         iniciarSincronizacao();
     } else {
         cancelarListeners();
@@ -134,16 +135,11 @@ onAuthStateChanged(auth, (user) => {
         if(btn) btn.disabled = false;
         if(spinner) spinner.classList.add('hidden');
         if(text) text.innerText = 'Entrar na Missão';
+        isAuthenticating = false;
     }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const keyInput = document.getElementById('access-key');
-    if (keyInput) {
-        keyInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') window.handleKeyLogin();
-        });
-    }
     const dataInput = document.getElementById('caixa-data');
     if (dataInput) {
         const tzOffset = (new Date()).getTimezoneOffset() * 60000;
@@ -167,7 +163,15 @@ window.togglePassword = () => {
     }
 };
 
-window.handleKeyLogin = () => {
+let isAuthenticating = false;
+
+window.handleKeyLogin = (event) => {
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
+
+    if (isAuthenticating) return;
+
     const keyInput = document.getElementById('access-key');
     const btn = document.getElementById('login-btn');
     const error = document.getElementById('login-error');
@@ -175,24 +179,35 @@ window.handleKeyLogin = () => {
     const text = document.getElementById('login-text');
     
     if(!keyInput) return;
-    const key = keyInput.value;
-    if(!key) return;
+    const key = keyInput.value.trim();
+    if(!key) {
+        if (error) {
+            error.classList.remove('hidden');
+            error.innerText = "Informe a chave de acesso.";
+        }
+        keyInput.focus();
+        return;
+    }
 
-    error.classList.add('hidden');
+    isAuthenticating = true;
+    if (error) error.classList.add('hidden');
     keyInput.disabled = true;
-    btn.disabled = true;
-    spinner.classList.remove('hidden');
-    text.innerText = 'Autenticando...';
+    if (btn) btn.disabled = true;
+    if (spinner) spinner.classList.remove('hidden');
+    if (text) text.innerText = 'Entrando...';
 
     signInWithEmailAndPassword(auth, "missao@missaosedentos.com", key)
         .catch((err) => {
             console.error("Erro no login:", err);
-            error.classList.remove('hidden');
-            error.innerText = "Chave incorreta ou erro de acesso.";
+            if (error) {
+                error.classList.remove('hidden');
+                error.innerText = "Chave incorreta ou erro de acesso.";
+            }
             keyInput.disabled = false;
-            btn.disabled = false;
-            spinner.classList.add('hidden');
-            text.innerText = 'Entrar na Missão';
+            if (btn) btn.disabled = false;
+            if (spinner) spinner.classList.add('hidden');
+            if (text) text.innerText = 'Entrar na Missão';
+            isAuthenticating = false;
             keyInput.focus();
         });
 };
@@ -247,6 +262,41 @@ window.router = (id) => {
     }
     
     if(id === 'dashboard') sortearFraseFirebase();
+    if(id === 'docs') window.iniciarDocsTimeout();
+};
+
+let docsIframeTimeout = null;
+
+window.docsIframeLoaded = () => {
+    if (docsIframeTimeout) {
+        clearTimeout(docsIframeTimeout);
+        docsIframeTimeout = null;
+    }
+
+    const slowEl = document.getElementById('docs-iframe-slow');
+    if (slowEl) {
+        slowEl.classList.add('hidden');
+    }
+
+    const loadingEl = document.getElementById('docs-iframe-loading');
+    if (loadingEl) {
+        loadingEl.classList.add('opacity-0');
+
+        setTimeout(() => {
+            loadingEl.style.display = 'none';
+        }, 300);
+    }
+};
+
+window.iniciarDocsTimeout = () => {
+    if (docsIframeTimeout) clearTimeout(docsIframeTimeout);
+    docsIframeTimeout = setTimeout(() => {
+        const slowEl = document.getElementById('docs-iframe-slow');
+        const loadingEl = document.getElementById('docs-iframe-loading');
+        if (slowEl && loadingEl && loadingEl.style.display !== 'none') {
+            slowEl.classList.remove('hidden');
+        }
+    }, 7000);
 };
 
 window.toggleMobileMenu = () => {
@@ -367,6 +417,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 logoContainer.style.display = 'none';
             } else {
                 logoContainer.style.display = 'flex';
+            }
+        }
+    }
+
+    const loginMissionLogo = document.getElementById('login-mission-logo');
+    const loginLogoContainer = document.getElementById('login-logo-container');
+    if (loginMissionLogo && loginLogoContainer) {
+        loginMissionLogo.onload = () => {
+            if (loginMissionLogo.naturalWidth > 1 && loginMissionLogo.naturalHeight > 1) {
+                loginLogoContainer.style.display = 'flex';
+            } else {
+                loginLogoContainer.style.display = 'none';
+            }
+        };
+        loginMissionLogo.onerror = () => {
+            loginLogoContainer.style.display = 'none';
+        };
+        if (loginMissionLogo.complete) {
+            if (loginMissionLogo.naturalWidth <= 1 || loginMissionLogo.naturalHeight <= 1) {
+                loginLogoContainer.style.display = 'none';
+            } else {
+                loginLogoContainer.style.display = 'flex';
             }
         }
     }
